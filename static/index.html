@@ -5,76 +5,281 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jarvis AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #ffffff; --sidebar-bg: #faf9fc; --panel: #f4f2fa;
-    --bubble-ai: #f5f3fb; --border: #e8e4f3;
-    --accent: #7c3aed; --accent2: #06b6d4;
-    --text: #150a30; --muted: #746e8c; --hover: #efeaf9;
+    --bg: #08080f; --sidebar-bg: #0c0c16; --panel: #14131f;
+    --card: #0f0f1a; --bubble-ai: #14131f; --border: rgba(130,110,230,0.16);
+    --accent: #a78bfa; --accent2: #60a5fa;
+    --text: #f0eff8; --muted: #7d7aa3; --hover: #1b1a2c;
     --danger: #e5484d;
     --grad: linear-gradient(135deg, var(--accent), var(--accent2));
+    --font-sans: 'Outfit', -apple-system, "Segoe UI", system-ui, sans-serif;
+    --font-serif: 'Instrument Serif', serif;
+    --font-mono: 'JetBrains Mono', "SFMono-Regular", Consolas, monospace;
   }
-  body.dark {
-    --bg: #131022; --sidebar-bg: #0d0b1a; --panel: #1c1830;
-    --bubble-ai: #221d3b; --border: #2e2850;
-    --accent: #a78bfa; --accent2: #22d3ee;
-    --text: #ece9f7; --muted: #9c94b8; --hover: #241f3f;
+  body:not(.dark) {
+    --bg: #faf9ff; --sidebar-bg: #f4f2fc; --panel: #efebfa;
+    --card: #ffffff; --bubble-ai: #f4f2fb; --border: #e5defa;
+    --accent: #7c6ee6; --accent2: #4fa3e3;
+    --text: #17122b; --muted: #6b6489; --hover: #ece6fa;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; font-family: 'Inter', -apple-system, "Segoe UI", system-ui, sans-serif; }
-  body { display: flex; background: var(--bg); color: var(--text); transition: background 0.2s, color 0.2s; }
-  code, pre { font-family: "SFMono-Regular", Consolas, monospace; }
-  pre { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; overflow-x: auto; }
+  html, body { margin: 0; min-height: 100%; font-family: var(--font-sans); }
+  body { background: var(--bg); color: var(--text); transition: background 0.25s, color 0.25s; position: relative; }
+  code, pre { font-family: var(--font-mono); }
+  pre { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; overflow-x: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  button { font-family: inherit; }
+
+  .ambientBg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(600px circle at 12% -8%, rgba(124,110,230,0.2), transparent 60%),
+      radial-gradient(500px circle at 96% 20%, rgba(96,165,250,0.13), transparent 60%),
+      radial-gradient(450px circle at 30% 100%, rgba(167,139,250,0.09), transparent 60%);
+  }
+
+  /* ============================================================
+     LANDING VIEW
+     ============================================================ */
+  #landingView { position: relative; z-index: 1; }
+
+  .landNav {
+    position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px);
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  .landNavInner { max-width: 1180px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+  .landBrand { display: flex; align-items: center; gap: 10px; }
+  .landLogo {
+    width: 32px; height: 32px; border-radius: 10px; background: var(--grad);
+    display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 15px;
+    box-shadow: 0 4px 14px rgba(124,110,230,0.35);
+  }
+  .landBrand span.name { font-weight: 700; font-size: 15px; }
+  .landBrand span.beta { font-size: 10px; padding: 2px 8px; border-radius: 20px; background: rgba(124,110,230,0.14); color: var(--accent); font-family: var(--font-mono); }
+  .landNavLinks { display: flex; align-items: center; gap: 4px; }
+  .landNavLinks button {
+    background: none; border: none; color: var(--muted); font-size: 14px; padding: 8px 14px;
+    border-radius: 10px; cursor: pointer; transition: color 0.15s;
+  }
+  .landNavLinks button:hover { color: var(--text); }
+  .landNavRight { display: flex; align-items: center; gap: 10px; }
+  .btnGhost { background: none; border: none; color: var(--muted); font-size: 14px; padding: 9px 16px; border-radius: 10px; cursor: pointer; }
+  .btnGhost:hover { color: var(--text); }
+  .btnGrad {
+    background: var(--grad); color: white; border: none; font-size: 14px; font-weight: 600;
+    padding: 10px 20px; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 18px rgba(124,110,230,0.3);
+    transition: opacity 0.15s;
+  }
+  .btnGrad:hover { opacity: 0.9; }
+  .navToggle { display: none; background: none; border: none; color: var(--text); font-size: 20px; cursor: pointer; }
+  .landMobileMenu { display: none; flex-direction: column; gap: 2px; padding: 8px 24px 18px 24px; border-top: 1px solid var(--border); }
+  .landMobileMenu.open { display: flex; }
+  .landMobileMenu button { text-align: left; background: none; border: none; color: var(--muted); font-size: 14px; padding: 10px 4px; }
+
+  .landSection { max-width: 1180px; margin: 0 auto; padding: 90px 24px; }
+  .landSectionNarrow { max-width: 880px; }
+  .eyebrow { font-size: 12px; letter-spacing: 1px; color: var(--muted); font-family: var(--font-mono); margin: 0 0 10px 0; }
+  .sectionHead { text-align: center; margin-bottom: 56px; }
+  .sectionHead h2 { font-family: var(--font-serif); font-weight: 400; font-size: 42px; margin: 0; letter-spacing: -0.5px; }
+
+  /* Hero */
+  #landHero { text-align: center; padding: 96px 24px 60px 24px; }
+  .heroBadge {
+    display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; border-radius: 20px;
+    font-size: 12px; font-weight: 500; font-family: var(--font-mono);
+    background: rgba(124,110,230,0.12); border: 1px solid rgba(124,110,230,0.28); color: var(--accent);
+    margin-bottom: 26px;
+  }
+  .heroBadge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  #landHero h1 {
+    font-family: var(--font-serif); font-weight: 400; font-size: 68px; line-height: 1.06; letter-spacing: -1px;
+    margin: 0 0 22px 0;
+  }
+  #landHero h1 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #landHero h1 .cursorBlink::after { content: '|'; animation: blink 1s infinite; margin-left: 3px; color: var(--accent); }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  #landHero > p.sub { color: var(--muted); font-size: 17px; max-width: 560px; margin: 0 auto 44px auto; line-height: 1.6; font-weight: 300; }
+
+  .heroInputWrap { max-width: 620px; margin: 0 auto 20px auto; }
+  .heroInputOuter { border-radius: 20px; padding: 1.5px; background: linear-gradient(135deg, rgba(124,110,230,0.5), rgba(96,165,250,0.3)); }
+  .heroInputInner { border-radius: 18px; background: var(--card); display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 20px; }
+  .heroInputInner input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 15px; font-family: inherit; }
+  .heroSendBtn {
+    width: 38px; height: 38px; border-radius: 12px; border: none; flex-shrink: 0; cursor: pointer;
+    background: var(--grad); color: white; font-size: 16px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(124,110,230,0.35);
+  }
+
+  .heroChips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 640px; margin: 0 auto 46px auto; }
+  .heroChip {
+    font-size: 12.5px; padding: 9px 16px; border-radius: 12px; cursor: pointer; font-family: inherit;
+    background: var(--card); border: 1px solid var(--border); color: var(--muted); transition: all 0.15s;
+  }
+  .heroChip:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,110,230,0.06); }
+
+  .heroBadgeRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .capsulePill {
+    display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted);
+    background: var(--panel); border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px;
+  }
+
+  /* Tool tabs demo */
+  .tabBar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 26px; flex-wrap: wrap; }
+  .tabBtn {
+    display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 500;
+    cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--muted);
+  }
+  .tabBtn.active {
+    background: linear-gradient(135deg, rgba(124,110,230,0.22), rgba(96,165,250,0.12));
+    border-color: rgba(124,110,230,0.35); color: var(--text);
+  }
+  .demoPanel { border-radius: 20px; overflow: hidden; background: var(--card); border: 1px solid var(--border); box-shadow: 0 32px 80px rgba(10,5,25,0.35); }
+  .demoChrome { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .demoChrome .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .demoChromeTitle { flex: 1; text-align: center; }
+  .demoChromeTitle span { font-size: 12px; padding: 4px 12px; border-radius: 8px; background: var(--panel); color: var(--muted); font-family: var(--font-mono); }
+  .demoBody { padding: 24px; min-height: 260px; }
+  .demoMsg { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+  .demoMsg.user { justify-content: flex-end; }
+  .demoAvatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .demoAvatar.ai { background: var(--grad); color: white; }
+  .demoAvatar.user { background: var(--panel); color: var(--muted); }
+  .demoBubble { padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; max-width: 380px; }
+  .demoBubble.ai { background: var(--panel); border-bottom-left-radius: 4px; color: var(--text); }
+  .demoBubble.user { background: var(--grad); color: white; border-bottom-right-radius: 4px; }
+  .demoBubble strong { color: var(--accent); }
+
+  .demoUpload {
+    border: 2px dashed var(--border); border-radius: 16px; padding: 46px 20px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(124,110,230,0.03);
+  }
+  .demoUpload .icon { font-size: 34px; }
+  .demoDocRow { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--border); margin-bottom: 10px; }
+  .demoDocIcon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .demoDocMeta { font-size: 11px; color: var(--muted); font-family: var(--font-mono); margin-top: 2px; }
+  .demoDocStatus { font-size: 11px; padding: 4px 10px; border-radius: 10px; background: rgba(52,211,153,0.12); color: #34d399; }
+
+  /* Features grid */
+  .featGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .featCard { padding: 24px; border-radius: 18px; background: var(--card); border: 1px solid var(--border); transition: border-color 0.2s, background 0.2s; }
+  .featIcon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 18px; }
+  .featCard h3 { font-size: 16px; font-weight: 600; margin: 0 0 8px 0; }
+  .featCard p { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin: 0; font-weight: 300; }
+
+  /* Modes */
+  .modeGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .modeCard { padding: 26px; border-radius: 18px; text-align: left; cursor: pointer; background: var(--card); border: 1px solid var(--border); transition: all 0.2s; }
+  .modeCard:hover { border-color: rgba(124,110,230,0.4); }
+  .modeDot { width: 11px; height: 11px; border-radius: 50%; margin-bottom: 16px; }
+  .modeCard .name { font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+  .modeCard .tag { font-size: 12px; font-family: var(--font-mono); margin-bottom: 12px; display: block; }
+  .modeCard p { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin: 0 0 14px 0; font-weight: 300; }
+  .modeCard .try { font-size: 12.5px; font-weight: 600; }
+
+  /* Use cases */
+  .useGrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .useCard { padding: 20px 14px; border-radius: 16px; text-align: center; background: var(--card); border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; }
+  .useCard:hover { border-color: rgba(124,110,230,0.3); background: rgba(124,110,230,0.06); }
+  .useCard .icon { font-size: 24px; margin-bottom: 8px; }
+  .useCard .label { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .useCard .desc { font-size: 11px; color: var(--muted); }
+
+  /* CTA */
+  .ctaBox {
+    border-radius: 26px; padding: 80px 32px; text-align: center; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, rgba(124,110,230,0.18), rgba(96,165,250,0.1));
+    border: 1px solid rgba(124,110,230,0.25);
+  }
+  .ctaBox h2 { font-family: var(--font-serif); font-weight: 400; font-size: 46px; margin: 0 0 16px 0; line-height: 1.15; }
+  .ctaBox h2 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .ctaBox p { color: var(--muted); font-size: 15px; max-width: 420px; margin: 0 auto 34px auto; font-weight: 300; }
+  .ctaBtns { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .btnGradLg { background: var(--grad); color: white; border: none; font-weight: 600; font-size: 14px; padding: 15px 32px; border-radius: 14px; cursor: pointer; box-shadow: 0 8px 26px rgba(124,110,230,0.4); }
+  .btnOutlineLg { background: var(--panel); border: 1px solid var(--border); color: var(--text); font-weight: 600; font-size: 14px; padding: 15px 32px; border-radius: 14px; cursor: pointer; }
+
+  /* Footer */
+  .landFooter { border-top: 1px solid var(--border); }
+  .landFooterInner { max-width: 1180px; margin: 0 auto; padding: 56px 24px 34px 24px; }
+  .footCols { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; margin-bottom: 40px; }
+  .footBrand p { font-size: 12.5px; color: var(--muted); line-height: 1.6; margin-top: 12px; max-width: 220px; }
+  .footColTitle { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 14px; }
+  .footCol ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .footCol a { font-size: 12.5px; color: var(--muted); }
+  .footCol a:hover { color: var(--text); }
+  .footBottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 22px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+  .footSocial { display: flex; gap: 16px; }
+
+  @media (max-width: 900px) {
+    .landNavLinks, .landNavRight .btnGhost { display: none; }
+    .navToggle { display: block; }
+    #landHero h1 { font-size: 40px; }
+    .featGrid, .modeGrid { grid-template-columns: 1fr; }
+    .useGrid { grid-template-columns: repeat(3, 1fr); }
+    .footCols { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ============================================================
+     APP VIEW (chat application — unchanged functionality)
+     ============================================================ */
+  #appView { display: none; height: 100vh; }
+  #appView.show { display: flex; }
+
   .bubble p:first-child { margin-top: 0; }
   .bubble p:last-child { margin-bottom: 0; }
-  a { color: var(--accent); }
 
-  /* ---------- Auth modal ---------- */
   #authOverlay {
-    display: none; position: fixed; inset: 0; background: rgba(10,5,25,0.5); z-index: 100;
-    align-items: center; justify-content: center; backdrop-filter: blur(3px);
+    display: none; position: fixed; inset: 0; background: rgba(8,8,15,0.55); z-index: 100;
+    align-items: center; justify-content: center; backdrop-filter: blur(4px);
   }
   #authOverlay.open { display: flex; }
   #authBox {
-    width: 320px; background: var(--bg); border: 1px solid var(--border); border-radius: 18px;
-    padding: 26px; display: flex; flex-direction: column; gap: 12px; position: relative;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    width: 320px; background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 28px; display: flex; flex-direction: column; gap: 12px; position: relative;
+    box-shadow: 0 30px 80px rgba(20,10,50,0.25);
   }
   #authCloseBtn { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; }
   #authBox h2 {
-    text-align: center; margin: 0 0 6px 0; background: var(--grad); -webkit-background-clip: text;
-    background-clip: text; color: transparent; font-weight: 800;
+    text-align: center; margin: 0 0 6px 0; font-family: var(--font-serif); font-weight: 400; font-size: 26px;
+    background: var(--grad); -webkit-background-clip: text;
+    background-clip: text; color: transparent;
   }
   #authBox input {
     padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--panel); color: var(--text); font-size: 14px; outline: none;
+    background: var(--panel); color: var(--text); font-size: 14px; outline: none; font-family: var(--font-sans);
   }
   #authBox input:focus { border-color: var(--accent); }
   #authBox button.primary {
     padding: 12px; border-radius: 12px; border: none; background: var(--grad);
-    color: white; font-weight: 700; cursor: pointer; font-size: 14px;
+    color: white; font-weight: 600; cursor: pointer; font-size: 14px; box-shadow: 0 8px 24px rgba(124,110,230,0.35);
   }
   #authError { color: var(--danger); font-size: 13px; text-align: center; min-height: 16px; }
   #authToggle { text-align: center; font-size: 13px; color: var(--muted); }
   #authToggle a { cursor: pointer; text-decoration: none; font-weight: 600; }
 
-  /* ---------- Sidebar ---------- */
   #sidebar {
-    width: 264px; flex-shrink: 0; background: var(--sidebar-bg);
+    width: 264px; flex-shrink: 0; background: var(--sidebar-bg); position: relative; z-index: 1;
     border-right: 1px solid var(--border); display: flex; flex-direction: column;
     padding: 14px 10px; transition: transform 0.2s;
   }
-  #brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 14px 8px; }
+  #brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 14px 8px; cursor: pointer; }
   #brandLogo {
     width: 30px; height: 30px; border-radius: 9px; background: var(--grad);
-    display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 14px;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px;
+    flex-shrink: 0; box-shadow: 0 4px 14px rgba(124,110,230,0.35);
   }
-  #brand span { font-weight: 800; font-size: 15px; letter-spacing: -0.3px; }
+  #brand span.nm { font-weight: 700; font-size: 15px; letter-spacing: -0.2px; }
+  #brandBeta {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-left: 2px;
+    background: rgba(124,110,230,0.14); color: var(--accent); font-family: var(--font-mono); font-weight: 500;
+  }
 
   .sideBtn {
     display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px;
@@ -82,11 +287,11 @@
     border: none; text-align: left; width: 100%; font-family: inherit;
   }
   .sideBtn:hover { background: var(--hover); }
-  #newChatBtn { background: var(--grad); color: white; font-weight: 600; margin-bottom: 8px; }
-  #newChatBtn:hover { opacity: 0.92; background: var(--grad); }
+  #newChatBtn { background: var(--grad); color: white; font-weight: 600; margin-bottom: 8px; box-shadow: 0 6px 18px rgba(124,110,230,0.3); }
+  #newChatBtn:hover { opacity: 0.9; background: var(--grad); }
   #searchInput {
     width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--bg); color: var(--text); font-size: 13px; margin: 4px 0 10px 0; outline: none;
+    background: var(--card); color: var(--text); font-size: 13px; margin: 4px 0 10px 0; outline: none;
     font-family: inherit;
   }
   #chatList { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
@@ -106,42 +311,56 @@
   }
   #guestNotice button {
     background: var(--grad); color: white; border: none; border-radius: 12px;
-    padding: 10px 18px; cursor: pointer; font-size: 13px; font-weight: 700;
+    padding: 10px 18px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 6px 18px rgba(124,110,230,0.3);
   }
 
   #sidebarBottom { border-top: 1px solid var(--border); padding-top: 8px; display: flex; flex-direction: column; gap: 2px; }
-  #userLabel { font-size: 12px; color: var(--muted); padding: 6px 12px; font-weight: 600; }
+  #userLabel { font-size: 12px; color: var(--muted); padding: 6px 12px; font-weight: 600; font-family: var(--font-mono); }
 
-  /* ---------- Main ---------- */
-  #main { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; }
-  #topbar { display: flex; align-items: center; padding: 14px 22px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 14px; gap: 10px; }
-  #menuToggle { display: none; background: none; border: none; font-size: 18px; color: var(--text); cursor: pointer; }
-  #status { margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 500; }
-  #exportBtn { background: none; border: 1px solid var(--border); border-radius: 10px; color: var(--text); cursor: pointer; font-size: 12px; padding: 6px 12px; font-weight: 600; }
-  #guestBadge { font-size: 11px; background: var(--panel); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; color: var(--muted); font-weight: 500; }
-
-  #hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 20px; }
-  #hero h1 {
-    font-size: 34px; font-weight: 800; margin: 0; letter-spacing: -0.5px;
-    background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  #main { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
+  #topbar {
+    display: flex; align-items: center; padding: 14px 22px; border-bottom: 1px solid var(--border);
+    font-weight: 700; font-size: 14px; gap: 10px; backdrop-filter: blur(6px);
   }
-  #hero p { color: var(--muted); font-size: 13px; margin: -14px 0 0 0; }
+  #backToLandingBtn { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+  #backToLandingBtn:hover { color: var(--text); background: var(--hover); }
+  #menuToggle { display: none; background: none; border: none; font-size: 18px; color: var(--text); cursor: pointer; }
+  #status { margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 500; font-family: var(--font-mono); }
+  #exportBtn {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+    cursor: pointer; font-size: 12px; padding: 7px 14px; font-weight: 600; transition: border-color 0.2s;
+  }
+  #exportBtn:hover { border-color: var(--accent); }
+  #guestBadge { font-size: 11px; background: var(--panel); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; color: var(--muted); font-weight: 500; font-family: var(--font-mono); }
+
+  #hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px; text-align: center; }
+  #heroTag {
+    display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; border-radius: 20px;
+    font-size: 12px; font-weight: 500; font-family: var(--font-mono);
+    background: rgba(124,110,230,0.12); border: 1px solid rgba(124,110,230,0.28); color: var(--accent);
+  }
+  #heroTag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  #hero h1 {
+    font-size: 46px; font-weight: 400; margin: 4px 0 0 0; letter-spacing: -0.5px; line-height: 1.15;
+    font-family: var(--font-serif); max-width: 640px;
+  }
+  #hero h1 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #hero h1 .cursorBlink::after { content: '|'; animation: blink 1s infinite; margin-left: 2px; color: var(--accent); }
+  #hero p { color: var(--muted); font-size: 14px; margin: 0; max-width: 460px; }
+  #heroChipsApp { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 560px; margin-top: 4px; }
 
   #chat { flex: 1; overflow-y: auto; padding: 25px 15%; display: flex; flex-direction: column; gap: 18px; }
-  .bubble { max-width: 100%; border-radius: 18px; padding: 11px 17px; font-size: 15px; line-height: 1.65; word-wrap: break-word; position: relative; }
-  .bubble.user { align-self: flex-end; background: var(--grad); color: white; border-bottom-right-radius: 4px; max-width: 70%; white-space: pre-wrap; }
+  .bubble { max-width: 100%; border-radius: 18px; padding: 12px 17px; font-size: 15px; line-height: 1.65; word-wrap: break-word; position: relative; }
+  .bubble.user { align-self: flex-end; background: var(--grad); color: white; border-bottom-right-radius: 4px; max-width: 70%; white-space: pre-wrap; box-shadow: 0 8px 22px rgba(124,110,230,0.25); }
   .bubble.ai { align-self: flex-start; background: var(--bubble-ai); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-  .bubble .name { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; opacity: 0.7; }
-  .bubble .copyBtn {
-    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px;
-    margin-top: 6px; padding: 0; font-weight: 600;
-  }
+  .bubble .name { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; opacity: 0.7; font-family: var(--font-mono); }
+  .bubble .copyBtn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; margin-top: 6px; padding: 0; font-weight: 600; }
   .bubble .copyBtn:hover { color: var(--accent); }
 
-  .typingDots span { display: inline-block; width: 6px; height: 6px; margin-right: 3px; border-radius: 50%; background: var(--accent); animation: blink 1.2s infinite; }
+  .typingDots span { display: inline-block; width: 6px; height: 6px; margin-right: 3px; border-radius: 50%; background: var(--accent); animation: blinkDot 1.2s infinite; }
   .typingDots span:nth-child(2) { animation-delay: 0.2s; }
   .typingDots span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes blink { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
+  @keyframes blinkDot { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
 
   .previewCard { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px; max-width: 90%; font-size: 12px; }
   .previewCard table { border-collapse: collapse; width: 100%; margin-top: 6px; }
@@ -160,20 +379,18 @@
     cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit;
   }
   .modeBtn:hover { border-color: var(--accent); color: var(--text); }
-  .modeBtn.active { background: var(--grad); border-color: transparent; color: white; }
+  .modeBtn.active { background: var(--grad); border-color: transparent; color: white; box-shadow: 0 4px 14px rgba(124,110,230,0.3); }
 
   #inputWrap { padding: 4px 15% 22px 15%; }
-  #inputBar { display: flex; align-items: center; gap: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 28px; padding: 8px 8px 8px 16px; }
+  #inputBarOuter { border-radius: 26px; padding: 1.5px; background: linear-gradient(135deg, rgba(124,110,230,0.5), rgba(79,163,227,0.3)); }
+  #inputBar { display: flex; align-items: center; gap: 6px; background: var(--card); border-radius: 25px; padding: 8px 8px 8px 16px; }
   #msgInput { flex: 1; border: none; background: transparent; color: var(--text); font-size: 15px; outline: none; padding: 8px 0; font-family: inherit; }
   button.roundBtn { background: transparent; border: none; color: var(--text); border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   button.roundBtn:hover { background: var(--hover); }
   button.roundBtn.active { color: var(--danger); }
-  #sendBtn { background: var(--grad); color: white; border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 16px; flex-shrink: 0; }
-  #sendBtn.stopMode { background: var(--danger); }
-  #hint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 8px; }
-
-  ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  #sendBtn { background: var(--grad); color: white; border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 16px; flex-shrink: 0; box-shadow: 0 4px 14px rgba(124,110,230,0.35); }
+  #sendBtn.stopMode { background: var(--danger); box-shadow: none; }
+  #hint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; font-family: var(--font-mono); }
 
   @media (max-width: 768px) {
     #sidebar { position: fixed; z-index: 20; height: 100vh; transform: translateX(-100%); }
@@ -181,114 +398,449 @@
     #menuToggle { display: block; }
     #chat, #fileChips, #modeRow { padding-left: 5%; padding-right: 5%; }
     #inputWrap { padding-left: 5%; padding-right: 5%; }
+    #hero h1 { font-size: 32px; }
   }
 </style>
 </head>
 <body>
 
-<div id="authOverlay">
-  <div id="authBox">
-    <button id="authCloseBtn">✕</button>
-    <h2 id="authTitle">Log in</h2>
-    <input id="authUsername" placeholder="Username" autocomplete="username" />
-    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" />
-    <div id="authError"></div>
-    <button class="primary" id="authSubmitBtn">Log in</button>
-    <div id="authToggle">Account nahi hai? <a id="authToggleLink">Sign up karo</a></div>
-  </div>
-</div>
+<div class="ambientBg"></div>
 
-<div id="sidebar">
-  <div id="brand"><div id="brandLogo">J</div><span>Jarvis AI</span></div>
-  <button class="sideBtn" id="newChatBtn">➕ New chat</button>
+<!-- ================= LANDING VIEW ================= -->
+<div id="landingView">
 
-  <input id="searchInput" placeholder="🔍 Search chats" style="display:none;" />
-  <div id="chatList" style="display:none;"></div>
-
-  <div id="guestNotice" style="display:none;">
-    <span>👋 Guest mode mein ho.<br>Chat history save nahi hogi, refresh karte hi naya chat khulega.</span>
-    <button id="guestLoginBtn">Login / Sign up karo</button>
-  </div>
-
-  <div id="sidebarBottom">
-    <div id="userLabel"></div>
-    <button class="sideBtn" id="ttsBtn">🔊 Voice: On</button>
-    <button class="sideBtn" id="themeBtn">🌙 Dark mode</button>
-    <button class="sideBtn" id="authActionBtn">🔐 Login / Sign up</button>
-  </div>
-</div>
-
-<div id="main">
-  <div id="topbar">
-    <button id="menuToggle">☰</button>
-    <span id="chatTitle">Jarvis AI</span>
-    <span id="guestBadge" style="display:none;">Guest — not saved</span>
-    <span id="status">🟢 Ready</span>
-    <button id="exportBtn">⬇️ Export</button>
-  </div>
-
-  <div id="hero">
-    <h1>Where should we begin?</h1>
-    <p id="heroSub" style="display:none;">Guest mode — is chat ka data save nahi hoga.</p>
-  </div>
-  <div id="chat" style="display:none;"></div>
-  <div id="fileChips"></div>
-  <div id="modeRow">
-    <button class="modeBtn" id="searchModeBtn">🌐 Web Search</button>
-    <button class="modeBtn" id="codeModeBtn">💻 Run Code</button>
-  </div>
-
-  <div id="inputWrap">
-    <div id="inputBar">
-      <button class="roundBtn" id="attachBtn" title="File attach karo">📎</button>
-      <input type="file" id="fileInput" hidden multiple accept="image/*,video/*,audio/*,.pdf,.txt,.csv,.xlsx,.xls,.docx" />
-      <input id="msgInput" type="text" placeholder="Message Jarvis..." autocomplete="off" />
-      <button class="roundBtn" id="micBtn" title="Bolke poocho">🎙️</button>
-      <button id="sendBtn" title="Send">➤</button>
+  <nav class="landNav">
+    <div class="landNavInner">
+      <div class="landBrand"><div class="landLogo">J</div><span class="name">Jarvis AI</span><span class="beta">beta</span></div>
+      <div class="landNavLinks">
+        <button data-scroll="landFeatures">Features</button>
+        <button data-scroll="landModes">Modes</button>
+        <button data-scroll="landUsecases">Use cases</button>
+        <button data-scroll="landCta">Get started</button>
+      </div>
+      <div class="landNavRight">
+        <button class="btnGhost" id="navLoginBtn">Log in</button>
+        <button class="btnGrad" id="navTryBtn">Try Jarvis free →</button>
+        <button class="navToggle" id="navToggleBtn">☰</button>
+      </div>
     </div>
-    <div id="hint">Jarvis file padh sakta hai, web search kar sakta hai, aur code chala kar dikha sakta hai.</div>
+    <div class="landMobileMenu" id="landMobileMenu">
+      <button data-scroll="landFeatures">Features</button>
+      <button data-scroll="landModes">Modes</button>
+      <button data-scroll="landUsecases">Use cases</button>
+      <button data-scroll="landCta">Get started</button>
+      <button class="btnGrad" style="margin-top:10px;" id="navTryBtnMobile">Try Jarvis free →</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="landHero">
+    <div class="heroBadge"><span class="dot"></span>Jarvis 2.0 — ab web search aur code run kar sakta hai</div>
+    <h1>Poocho Jarvis se <span class="grad cursorBlink" id="landTyped">kuch bhi.</span></h1>
+    <p class="sub">Aapka apna AI assistant — Hinglish mein baat karo, web search karwao, code likhwao ya chalwao, aur files padhwao. Sab kuch ek jagah.</p>
+
+    <div class="heroInputWrap">
+      <div class="heroInputOuter">
+        <div class="heroInputInner">
+          <input id="landHeroInput" type="text" placeholder="Jarvis se kuch bhi poocho…" autocomplete="off" />
+          <button class="heroSendBtn" id="landHeroSend">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="heroChips">
+      <button class="heroChip" data-fill="Ek Python web scraper likh do">Python web scraper likho</button>
+      <button class="heroChip" data-fill="Mera business plan review karo">Business plan review</button>
+      <button class="heroChip" data-fill="Is code mein bug dhundo">Code mein bug dhundo</button>
+      <button class="heroChip" data-fill="Aaj ki taazi khabrein batao">Aaj ki khabrein</button>
+      <button class="heroChip" data-fill="Ek email draft likh do">Email draft karo</button>
+    </div>
+
+    <div class="heroBadgeRow">
+      <div class="capsulePill">🌐 Web search</div>
+      <div class="capsulePill">💻 Code run</div>
+      <div class="capsulePill">📄 File analysis</div>
+      <div class="capsulePill">🎙️ Voice input</div>
+      <div class="capsulePill">💬 Chat history</div>
+    </div>
+  </section>
+
+  <!-- TOOL TABS DEMO -->
+  <section class="landSection">
+    <div class="sectionHead">
+      <p class="eyebrow">JARVIS KYA KAR SAKTA HAI</p>
+      <h2>Ek assistant, har kaam ke liye</h2>
+    </div>
+
+    <div class="tabBar" id="demoTabBar">
+      <button class="tabBtn active" data-tab="chat">💬 Chat</button>
+      <button class="tabBtn" data-tab="code">💻 Code</button>
+      <button class="tabBtn" data-tab="vision">📎 Files</button>
+      <button class="tabBtn" data-tab="docs">📄 Documents</button>
+    </div>
+
+    <div class="demoPanel">
+      <div class="demoChrome">
+        <div class="dot" style="background:#ff5f57"></div>
+        <div class="dot" style="background:#febc2e"></div>
+        <div class="dot" style="background:#28c840"></div>
+        <div class="demoChromeTitle"><span id="demoChromeLabel">jarvis · Chat</span></div>
+      </div>
+
+      <div class="demoBody" id="demoTabChat">
+        <div class="demoMsg">
+          <div class="demoAvatar ai">J</div>
+          <div class="demoBubble ai">Namaste! Main Jarvis hoon. Aaj kis kaam mein madad karoon?</div>
+        </div>
+        <div class="demoMsg user">
+          <div class="demoBubble user">Mera Python code optimize kar do</div>
+          <div class="demoAvatar user">U</div>
+        </div>
+        <div class="demoMsg">
+          <div class="demoAvatar ai">J</div>
+          <div class="demoBubble ai">Bilkul! Teen sudhaar dikh rahe hain:<br><br><strong>1. List comprehension</strong> use karo — loop se 3× fast.<br><strong>2. Repeated lookup cache</strong> karo loop se bahar.</div>
+        </div>
+      </div>
+
+      <div class="demoBody" id="demoTabCode" style="display:none;">
+        <pre style="margin:0;"><span style="color:var(--accent)"># Jarvis ka suggestion: list comprehension use karo</span>
+<span style="color:var(--accent2)">result</span> = [process(x) for x in data if x.valid]
+
+<span style="color:var(--accent)"># Loop ke bahar cache kiya lookup</span>
+<span style="color:var(--accent2)">lookup</span> = cache.get(key, None)
+for item in items:
+    process(item, lookup)</pre>
+      </div>
+
+      <div class="demoBody" id="demoTabVision" style="display:none;">
+        <div class="demoUpload">
+          <div class="icon">📎</div>
+          <p style="margin:0;color:var(--muted);font-size:14px;">Image, screenshot ya file yahan drop karo</p>
+          <p style="margin:0;color:var(--muted);font-size:11px;font-family:var(--font-mono);">PNG · JPG · PDF · CSV · XLSX</p>
+        </div>
+      </div>
+
+      <div class="demoBody" id="demoTabDocs" style="display:none;">
+        <div class="demoDocRow">
+          <div class="demoDocIcon" style="background:rgba(251,146,60,0.15);color:#fb923c;">📊</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">sales_report.xlsx</div><div class="demoDocMeta">45 rows · Analyzed</div></div>
+          <div class="demoDocStatus">Ready</div>
+        </div>
+        <div class="demoDocRow">
+          <div class="demoDocIcon" style="background:rgba(96,165,250,0.15);color:#60a5fa;">📋</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">notes.pdf</div><div class="demoDocMeta">12 pages · Summarized</div></div>
+          <div class="demoDocStatus">Ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="landSection" id="landFeatures">
+    <div class="sectionHead"><h2>Capabilities jo kaam aayengi</h2></div>
+    <div class="featGrid">
+      <div class="featCard">
+        <div class="featIcon" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🌐</div>
+        <h3>Web Search</h3>
+        <p>Live internet se current events, prices, aur research turant nikaal ke laata hai.</p>
+      </div>
+      <div class="featCard">
+        <div class="featIcon" style="background:rgba(96,165,250,0.15);color:#60a5fa;">💻</div>
+        <h3>Code likho aur chalao</h3>
+        <p>40+ languages mein code likhta, debug karta, aur seedha chala kar result bhi dikhata hai.</p>
+      </div>
+      <div class="featCard">
+        <div class="featIcon" style="background:rgba(52,211,153,0.15);color:#34d399;">📄</div>
+        <h3>File & Document analysis</h3>
+        <p>PDF, Excel, Word, images upload karo — Jarvis padh kar summary aur insights deta hai.</p>
+      </div>
+      <div class="featCard">
+        <div class="featIcon" style="background:rgba(251,146,60,0.15);color:#fb923c;">🎙️</div>
+        <h3>Voice input & output</h3>
+        <p>Bol kar poocho, Jarvis bol kar jawab bhi de sakta hai — hands-free conversation.</p>
+      </div>
+      <div class="featCard">
+        <div class="featIcon" style="background:rgba(244,114,182,0.15);color:#f472b6;">💬</div>
+        <h3>Chat history save</h3>
+        <p>Har conversation save hoti hai, kabhi bhi search karke wapas dekh sakte ho.</p>
+      </div>
+      <div class="featCard">
+        <div class="featIcon" style="background:rgba(251,191,36,0.15);color:#fbbf24;">⬇️</div>
+        <h3>Export & share</h3>
+        <p>Kisi bhi chat ko ek click mein text file mein export kar lo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODES -->
+  <section class="landSection" id="landModes">
+    <div class="sectionHead">
+      <p class="eyebrow">SAHI MODE CHUNO</p>
+      <h2>Har kaam ke liye sahi tarika</h2>
+    </div>
+    <div class="modeGrid">
+      <div class="modeCard" data-appmode="none">
+        <div class="modeDot" style="background:#a78bfa;"></div>
+        <div class="name">Normal Chat</div>
+        <span class="tag" style="color:#a78bfa;">General</span>
+        <p>Roz-marra ke sawaal, likhna, brainstorming, aur general madad ke liye.</p>
+        <span class="try" style="color:#a78bfa;">Ye mode try karo →</span>
+      </div>
+      <div class="modeCard" data-appmode="search">
+        <div class="modeDot" style="background:#60a5fa;"></div>
+        <div class="name">Web Search</div>
+        <span class="tag" style="color:#60a5fa;">Live Data</span>
+        <p>Current events, prices, aur latest jaankari ke liye — Jarvis live web search karta hai.</p>
+        <span class="try" style="color:#60a5fa;">Ye mode try karo →</span>
+      </div>
+      <div class="modeCard" data-appmode="code">
+        <div class="modeDot" style="background:#34d399;"></div>
+        <div class="name">Run Code</div>
+        <span class="tag" style="color:#34d399;">Execute</span>
+        <p>Code likhwao aur seedha chala kar result bhi dekho, bina kahin aur copy-paste kiye.</p>
+        <span class="try" style="color:#34d399;">Ye mode try karo →</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- USE CASES -->
+  <section class="landSection landSectionNarrow" id="landUsecases">
+    <div class="sectionHead"><h2>Sabke kaam ka</h2></div>
+    <div class="useGrid">
+      <div class="useCard"><div class="icon">👨‍💻</div><div class="label">Developers</div><div class="desc">Code, debug, architecture</div></div>
+      <div class="useCard"><div class="icon">✍️</div><div class="label">Writers</div><div class="desc">Drafts, editing</div></div>
+      <div class="useCard"><div class="icon">📊</div><div class="label">Analysts</div><div class="desc">Data, reports</div></div>
+      <div class="useCard"><div class="icon">🎓</div><div class="label">Students</div><div class="desc">Padhai, concepts</div></div>
+      <div class="useCard"><div class="icon">💼</div><div class="label">Business</div><div class="desc">Plans, emails</div></div>
+      <div class="useCard"><div class="icon">🎨</div><div class="label">Creators</div><div class="desc">Ideas, content</div></div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="landSection" id="landCta">
+    <div class="ctaBox">
+      <h2>Ab shuru karo<br><span class="grad">apni sabse achhi conversation</span></h2>
+      <p>Jarvis free hai — bina card ke, bina wait ke. Bas type karo aur baat shuru karo.</p>
+      <div class="ctaBtns">
+        <button class="btnGradLg" id="ctaTryBtn">Free mein shuru karo →</button>
+        <button class="btnOutlineLg" id="ctaLoginBtn">Log in karo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="landFooter">
+    <div class="landFooterInner">
+      <div class="footCols">
+        <div class="footBrand">
+          <div class="landBrand"><div class="landLogo">J</div><span class="name">Jarvis AI</span></div>
+          <p>Aapka apna Hinglish AI assistant. Web search, code, aur files — sab ek jagah.</p>
+        </div>
+        <div class="footCol">
+          <div class="footColTitle">PRODUCT</div>
+          <ul><li><a href="#" data-scroll="landFeatures">Features</a></li><li><a href="#" data-scroll="landModes">Modes</a></li><li><a href="#" data-scroll="landUsecases">Use cases</a></li></ul>
+        </div>
+        <div class="footCol">
+          <div class="footColTitle">RESOURCES</div>
+          <ul><li><a href="#">GitHub</a></li><li><a href="#">Documentation</a></li></ul>
+        </div>
+        <div class="footCol">
+          <div class="footColTitle">START</div>
+          <ul><li><a href="#" id="footTryLink">Try Jarvis free</a></li><li><a href="#" id="footLoginLink">Log in</a></li></ul>
+        </div>
+      </div>
+      <div class="footBottom">
+        <span>© 2026 Jarvis AI</span>
+        <div class="footSocial"><a href="#">GitHub</a><a href="#">Twitter</a></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ================= APP VIEW (chat application) ================= -->
+<div id="appView">
+
+  <div id="authOverlay">
+    <div id="authBox">
+      <button id="authCloseBtn">✕</button>
+      <h2 id="authTitle">Log in</h2>
+      <input id="authUsername" placeholder="Username" autocomplete="username" />
+      <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" />
+      <div id="authError"></div>
+      <button class="primary" id="authSubmitBtn">Log in</button>
+      <div id="authToggle">Account nahi hai? <a id="authToggleLink">Sign up karo</a></div>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <div id="brand"><div id="brandLogo">J</div><span class="nm">Jarvis AI</span><span id="brandBeta">beta</span></div>
+    <button class="sideBtn" id="newChatBtn">➕ New chat</button>
+
+    <input id="searchInput" placeholder="🔍 Search chats" style="display:none;" />
+    <div id="chatList" style="display:none;"></div>
+
+    <div id="guestNotice" style="display:none;">
+      <span>👋 Guest mode mein ho.<br>Chat history save nahi hogi, refresh karte hi naya chat khulega.</span>
+      <button id="guestLoginBtn">Login / Sign up karo</button>
+    </div>
+
+    <div id="sidebarBottom">
+      <div id="userLabel"></div>
+      <button class="sideBtn" id="ttsBtn">🔊 Voice: On</button>
+      <button class="sideBtn" id="themeBtn">🌙 Dark mode</button>
+      <button class="sideBtn" id="authActionBtn">🔐 Login / Sign up</button>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="topbar">
+      <button id="backToLandingBtn" title="Homepage par jao">←</button>
+      <button id="menuToggle">☰</button>
+      <span id="chatTitle">Jarvis AI</span>
+      <span id="guestBadge" style="display:none;">Guest — not saved</span>
+      <span id="status">🟢 Ready</span>
+      <button id="exportBtn">⬇️ Export</button>
+    </div>
+
+    <div id="hero">
+      <div id="heroTag"><span class="dot"></span>Jarvis 2.0 — ab web search aur code run kar sakta hai</div>
+      <h1>Poocho mujhse <span class="grad cursorBlink" id="typedPhrase">kuch bhi.</span></h1>
+      <p id="heroSub" style="display:none;">Guest mode — is chat ka data save nahi hoga.</p>
+      <div id="heroChipsApp">
+        <button class="heroChip" data-fill="Ek Python web scraper likh do">Python web scraper likho</button>
+        <button class="heroChip" data-fill="Aaj ki taazi khabrein batao">Aaj ki khabrein</button>
+        <button class="heroChip" data-fill="Mera business plan review karo">Business plan review</button>
+        <button class="heroChip" data-fill="Is code mein bug dhundo">Code mein bug dhundo</button>
+        <button class="heroChip" data-fill="Ek email draft likh do">Email draft karo</button>
+      </div>
+    </div>
+    <div id="chat" style="display:none;"></div>
+    <div id="fileChips"></div>
+    <div id="modeRow">
+      <button class="modeBtn" id="searchModeBtn">🌐 Web Search</button>
+      <button class="modeBtn" id="codeModeBtn">💻 Run Code</button>
+    </div>
+
+    <div id="inputWrap">
+      <div id="inputBarOuter">
+        <div id="inputBar">
+          <button class="roundBtn" id="attachBtn" title="File attach karo">📎</button>
+          <input type="file" id="fileInput" hidden multiple accept="image/*,video/*,audio/*,.pdf,.txt,.csv,.xlsx,.xls,.docx" />
+          <input id="msgInput" type="text" placeholder="Message Jarvis..." autocomplete="off" />
+          <button class="roundBtn" id="micBtn" title="Bolke poocho">🎙️</button>
+          <button id="sendBtn" title="Send">➤</button>
+        </div>
+      </div>
+      <div id="hint">Jarvis file padh sakta hai, web search kar sakta hai, aur code chala kar dikha sakta hai.</div>
+    </div>
   </div>
 </div>
 
 <script>
-// ============ Elements ============
-const authOverlay = document.getElementById('authOverlay');
-const authCloseBtn = document.getElementById('authCloseBtn');
-const authTitle = document.getElementById('authTitle');
-const authUsername = document.getElementById('authUsername');
-const authPassword = document.getElementById('authPassword');
-const authError = document.getElementById('authError');
-const authSubmitBtn = document.getElementById('authSubmitBtn');
-const authToggle = document.getElementById('authToggle');
-const authToggleLink = document.getElementById('authToggleLink');
-const authActionBtn = document.getElementById('authActionBtn');
-const guestLoginBtn = document.getElementById('guestLoginBtn');
-const guestNotice = document.getElementById('guestNotice');
-const guestBadge = document.getElementById('guestBadge');
-const heroSub = document.getElementById('heroSub');
+// ======================================================================
+// VIEW SWITCHING (landing <-> app)
+// ======================================================================
+const landingView = document.getElementById('landingView');
+const appView = document.getElementById('appView');
+let pendingHeroText = '';
+let pendingAppMode = null;
 
-const sidebarEl = document.getElementById('sidebar');
-const chatListEl = document.getElementById('chatList');
-const searchInput = document.getElementById('searchInput');
-const newChatBtn = document.getElementById('newChatBtn');
-const themeBtn = document.getElementById('themeBtn');
-const ttsBtn = document.getElementById('ttsBtn');
-const userLabel = document.getElementById('userLabel');
-const menuToggle = document.getElementById('menuToggle');
-const chatTitleEl = document.getElementById('chatTitle');
-const exportBtn = document.getElementById('exportBtn');
+function goToApp(prefillText, forceMode) {
+  landingView.style.display = 'none';
+  appView.classList.add('show');
+  if (forceMode) pendingAppMode = forceMode;
+  if (prefillText) pendingHeroText = prefillText;
+  if (!window.__jarvisAppInited) {
+    window.__jarvisAppInited = true;
+    initApp();
+  }
+  if (pendingAppMode) { setMode(pendingAppMode); pendingAppMode = null; }
+  if (pendingHeroText) { inputEl.value = pendingHeroText; pendingHeroText = ''; inputEl.focus(); }
+}
+function backToLanding() {
+  appView.classList.remove('show');
+  landingView.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-const heroEl = document.getElementById('hero');
-const chatEl = document.getElementById('chat');
-const fileChipsEl = document.getElementById('fileChips');
-const inputEl = document.getElementById('msgInput');
-const sendBtn = document.getElementById('sendBtn');
-const micBtn = document.getElementById('micBtn');
-const statusEl = document.getElementById('status');
-const attachBtn = document.getElementById('attachBtn');
-const fileInput = document.getElementById('fileInput');
-const searchModeBtn = document.getElementById('searchModeBtn');
-const codeModeBtn = document.getElementById('codeModeBtn');
+document.getElementById('navTryBtn').addEventListener('click', () => goToApp());
+document.getElementById('navTryBtnMobile').addEventListener('click', () => goToApp());
+document.getElementById('navLoginBtn').addEventListener('click', () => { goToApp(); setTimeout(() => openAuth(), 50); });
+document.getElementById('ctaTryBtn').addEventListener('click', () => goToApp());
+document.getElementById('ctaLoginBtn').addEventListener('click', () => { goToApp(); setTimeout(() => openAuth(), 50); });
+document.getElementById('footTryLink').addEventListener('click', (e) => { e.preventDefault(); goToApp(); });
+document.getElementById('footLoginLink').addEventListener('click', (e) => { e.preventDefault(); goToApp(); setTimeout(() => openAuth(), 50); });
+document.getElementById('backToLandingBtn').addEventListener('click', backToLanding);
+
+document.getElementById('landHeroSend').addEventListener('click', () => {
+  const val = document.getElementById('landHeroInput').value.trim();
+  goToApp(val);
+});
+document.getElementById('landHeroInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const val = e.target.value.trim();
+    goToApp(val);
+  }
+});
+document.querySelectorAll('#landHero .heroChip').forEach(chip => {
+  chip.addEventListener('click', () => { document.getElementById('landHeroInput').value = chip.dataset.fill; document.getElementById('landHeroInput').focus(); });
+});
+document.querySelectorAll('.modeCard').forEach(card => {
+  card.addEventListener('click', () => goToApp(null, card.dataset.appmode));
+});
+
+// Nav scroll links
+document.querySelectorAll('[data-scroll]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.getElementById(el.dataset.scroll)?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('landMobileMenu').classList.remove('open');
+  });
+});
+document.getElementById('navToggleBtn').addEventListener('click', () => {
+  document.getElementById('landMobileMenu').classList.toggle('open');
+});
+
+// Landing hero typed animation
+const landTypedEl = document.getElementById('landTyped');
+const landPhrases = ['kuch bhi.', 'code.', 'research.', 'ideas.', 'kaam.'];
+let landPhraseIdx = 0;
+function typeLandPhrase() {
+  const phrase = landPhrases[landPhraseIdx];
+  let i = 0;
+  landTypedEl.textContent = '';
+  const interval = setInterval(() => {
+    i++;
+    landTypedEl.textContent = phrase.slice(0, i);
+    if (i >= phrase.length) {
+      clearInterval(interval);
+      setTimeout(() => { landPhraseIdx = (landPhraseIdx + 1) % landPhrases.length; typeLandPhrase(); }, 1800);
+    }
+  }, 60);
+}
+typeLandPhrase();
+
+// Demo tool tabs
+const demoLabels = { chat: 'jarvis · Chat', code: 'jarvis · Code', vision: 'jarvis · Files', docs: 'jarvis · Documents' };
+document.querySelectorAll('#demoTabBar .tabBtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#demoTabBar .tabBtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById('demoChromeLabel').textContent = demoLabels[tab];
+    ['chat', 'code', 'vision', 'docs'].forEach(t => {
+      document.getElementById('demoTab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = (t === tab) ? 'block' : 'none';
+    });
+  });
+});
+
+// ======================================================================
+// CHAT APP (unchanged functionality) — initialised on first entry
+// ======================================================================
+let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError, authSubmitBtn,
+    authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
+    sidebarEl, chatListEl, searchInput, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle,
+    chatTitleEl, exportBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
+    attachBtn, fileInput, searchModeBtn, codeModeBtn;
 
 let isSignup = false;
 let isLoggedIn = false;
@@ -298,52 +850,174 @@ let guestChatId = null;
 let attachedFiles = [];
 let currentController = null;
 let isGenerating = false;
-let activeMode = 'none'; // 'none' | 'search' | 'code'
+let activeMode = 'none';
 
-// ============ Mode toggles ============
+function initApp() {
+  authOverlay = document.getElementById('authOverlay');
+  authCloseBtn = document.getElementById('authCloseBtn');
+  authTitle = document.getElementById('authTitle');
+  authUsername = document.getElementById('authUsername');
+  authPassword = document.getElementById('authPassword');
+  authError = document.getElementById('authError');
+  authSubmitBtn = document.getElementById('authSubmitBtn');
+  authToggle = document.getElementById('authToggle');
+  authToggleLink = document.getElementById('authToggleLink');
+  authActionBtn = document.getElementById('authActionBtn');
+  guestLoginBtn = document.getElementById('guestLoginBtn');
+  guestNotice = document.getElementById('guestNotice');
+  guestBadge = document.getElementById('guestBadge');
+  heroSub = document.getElementById('heroSub');
+
+  sidebarEl = document.getElementById('sidebar');
+  chatListEl = document.getElementById('chatList');
+  searchInput = document.getElementById('searchInput');
+  newChatBtn = document.getElementById('newChatBtn');
+  themeBtn = document.getElementById('themeBtn');
+  ttsBtn = document.getElementById('ttsBtn');
+  userLabel = document.getElementById('userLabel');
+  menuToggle = document.getElementById('menuToggle');
+  chatTitleEl = document.getElementById('chatTitle');
+  exportBtn = document.getElementById('exportBtn');
+
+  heroEl = document.getElementById('hero');
+  chatEl = document.getElementById('chat');
+  fileChipsEl = document.getElementById('fileChips');
+  inputEl = document.getElementById('msgInput');
+  sendBtn = document.getElementById('sendBtn');
+  micBtn = document.getElementById('micBtn');
+  statusEl = document.getElementById('status');
+  attachBtn = document.getElementById('attachBtn');
+  fileInput = document.getElementById('fileInput');
+  searchModeBtn = document.getElementById('searchModeBtn');
+  codeModeBtn = document.getElementById('codeModeBtn');
+
+  searchModeBtn.addEventListener('click', () => setMode('search'));
+  codeModeBtn.addEventListener('click', () => setMode('code'));
+
+  authCloseBtn.addEventListener('click', closeAuth);
+  authActionBtn.addEventListener('click', openAuth);
+  guestLoginBtn.addEventListener('click', openAuth);
+  document.getElementById('brand').addEventListener('click', backToLanding);
+
+  authToggleLink.addEventListener('click', () => {
+    isSignup = !isSignup;
+    authTitle.textContent = isSignup ? 'Sign up' : 'Log in';
+    authSubmitBtn.textContent = isSignup ? 'Sign up' : 'Log in';
+    authToggle.innerHTML = isSignup
+      ? 'Pehle se account hai? <a id="authToggleLink2">Log in karo</a>'
+      : 'Account nahi hai? <a id="authToggleLink">Sign up karo</a>';
+    const relink = document.getElementById('authToggleLink2') || document.getElementById('authToggleLink');
+    relink.addEventListener('click', () => authToggleLink.dispatchEvent(new Event('click')));
+    authError.textContent = '';
+  });
+
+  authSubmitBtn.addEventListener('click', async () => {
+    const username = authUsername.value.trim();
+    const password = authPassword.value;
+    if (!username || !password) { authError.textContent = 'Username aur password dono bharo.'; return; }
+    const fd = new FormData();
+    fd.append('username', username);
+    fd.append('password', password);
+    const res = await fetch(isSignup ? '/api/signup' : '/api/login', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) { authError.textContent = data.error || 'Kuch galat ho gaya.'; return; }
+    closeAuth();
+    await enterLoggedInMode(data.username);
+  });
+
+  themeBtn.addEventListener('click', () => applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark'));
+  applyTheme(localStorage.getItem('jarvis_theme') || 'dark');
+
+  ttsBtn.addEventListener('click', () => applyTts(localStorage.getItem('jarvis_tts') === 'on' ? 'off' : 'on'));
+  applyTts(localStorage.getItem('jarvis_tts') || 'on');
+
+  menuToggle.addEventListener('click', () => sidebarEl.classList.toggle('open'));
+  searchInput.addEventListener('input', () => renderSidebar(searchInput.value));
+
+  newChatBtn.addEventListener('click', () => {
+    if (isLoggedIn) { activeChatId = null; renderSidebar(searchInput.value); }
+    else { guestChatId = crypto.randomUUID(); }
+    showHero();
+    sidebarEl.classList.remove('open');
+  });
+
+  attachBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    attachedFiles = attachedFiles.concat(Array.from(e.target.files)).slice(0, 5);
+    renderFileChips();
+  });
+
+  sendBtn.addEventListener('click', () => {
+    if (isGenerating) { if (currentController) currentController.abort(); return; }
+    sendMessage(inputEl.value);
+  });
+  inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !isGenerating) sendMessage(inputEl.value); });
+
+  exportBtn.addEventListener('click', () => {
+    const bubbles = Array.from(chatEl.querySelectorAll('.bubble')).map(b => {
+      const who = b.classList.contains('user') ? 'You' : 'Jarvis';
+      const body = b.querySelector('.body');
+      return `${who}: ${body ? body.dataset.raw || body.textContent : ''}`;
+    }).join('\n\n');
+    if (!bubbles) return;
+    const blob = new Blob([bubbles], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = (chatTitleEl.textContent || 'chat') + '.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'hi-IN';
+    let recognizing = false;
+    recognition.onstart = () => { recognizing = true; micBtn.classList.add('active'); statusEl.textContent = '🎙️ Sun raha hoon...'; };
+    recognition.onend = () => { recognizing = false; micBtn.classList.remove('active'); statusEl.textContent = '🟢 Ready'; };
+    recognition.onresult = (event) => sendMessage(event.results[0][0].transcript);
+    micBtn.addEventListener('click', () => { if (recognizing) { recognition.stop(); return; } recognition.start(); });
+  } else {
+    micBtn.disabled = true;
+    micBtn.title = 'Yeh browser voice input support nahi karta (Chrome try karo)';
+  }
+
+  // typed phrase animation (app hero)
+  const typedPhraseEl = document.getElementById('typedPhrase');
+  const heroPhrases = ['kuch bhi.', 'code.', 'research.', 'ideas.', 'kaam.'];
+  let phraseIdx = 0;
+  function typePhrase() {
+    const phrase = heroPhrases[phraseIdx];
+    let i = 0;
+    typedPhraseEl.textContent = '';
+    const typeInterval = setInterval(() => {
+      i++;
+      typedPhraseEl.textContent = phrase.slice(0, i);
+      if (i >= phrase.length) {
+        clearInterval(typeInterval);
+        setTimeout(() => { phraseIdx = (phraseIdx + 1) % heroPhrases.length; typePhrase(); }, 1800);
+      }
+    }, 60);
+  }
+  typePhrase();
+
+  document.querySelectorAll('#heroChipsApp .heroChip').forEach(chip => {
+    chip.addEventListener('click', () => { inputEl.value = chip.dataset.fill; inputEl.focus(); });
+  });
+
+  checkAuth();
+}
+
 function setMode(newMode) {
   activeMode = (activeMode === newMode) ? 'none' : newMode;
   searchModeBtn.classList.toggle('active', activeMode === 'search');
   codeModeBtn.classList.toggle('active', activeMode === 'code');
 }
-searchModeBtn.addEventListener('click', () => setMode('search'));
-codeModeBtn.addEventListener('click', () => setMode('code'));
 
-// ============ Auth modal ============
 function openAuth() { authOverlay.classList.add('open'); authError.textContent = ''; }
 function closeAuth() { authOverlay.classList.remove('open'); }
-authCloseBtn.addEventListener('click', closeAuth);
-authActionBtn.addEventListener('click', openAuth);
-guestLoginBtn.addEventListener('click', openAuth);
-
-authToggleLink.addEventListener('click', () => {
-  isSignup = !isSignup;
-  authTitle.textContent = isSignup ? 'Sign up' : 'Log in';
-  authSubmitBtn.textContent = isSignup ? 'Sign up' : 'Log in';
-  authToggle.innerHTML = isSignup
-    ? 'Pehle se account hai? <a id="authToggleLink2">Log in karo</a>'
-    : 'Account nahi hai? <a id="authToggleLink">Sign up karo</a>';
-  const relink = document.getElementById('authToggleLink2') || document.getElementById('authToggleLink');
-  relink.addEventListener('click', () => authToggleLink.dispatchEvent(new Event('click')));
-  authError.textContent = '';
-});
-
-authSubmitBtn.addEventListener('click', async () => {
-  const username = authUsername.value.trim();
-  const password = authPassword.value;
-  if (!username || !password) { authError.textContent = 'Username aur password dono bharo.'; return; }
-
-  const fd = new FormData();
-  fd.append('username', username);
-  fd.append('password', password);
-
-  const res = await fetch(isSignup ? '/api/signup' : '/api/login', { method: 'POST', body: fd });
-  const data = await res.json();
-  if (!res.ok) { authError.textContent = data.error || 'Kuch galat ho gaya.'; return; }
-
-  closeAuth();
-  await enterLoggedInMode(data.username);
-});
 
 async function doLogout() {
   await fetch('/api/logout', { method: 'POST' });
@@ -388,27 +1062,17 @@ function enterGuestMode() {
   showHero();
 }
 
-// ============ Theme ============
 function applyTheme(mode) {
   if (mode === 'dark') { document.body.classList.add('dark'); themeBtn.textContent = '☀️ Light mode'; }
   else { document.body.classList.remove('dark'); themeBtn.textContent = '🌙 Dark mode'; }
   localStorage.setItem('jarvis_theme', mode);
 }
-applyTheme(localStorage.getItem('jarvis_theme') || 'light');
-themeBtn.addEventListener('click', () => applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark'));
 
-// ============ TTS toggle ============
 function applyTts(mode) {
   ttsBtn.textContent = mode === 'on' ? '🔊 Voice: On' : '🔇 Voice: Off';
   localStorage.setItem('jarvis_tts', mode);
 }
-applyTts(localStorage.getItem('jarvis_tts') || 'on');
-ttsBtn.addEventListener('click', () => applyTts(localStorage.getItem('jarvis_tts') === 'on' ? 'off' : 'on'));
 
-// ============ Sidebar toggle (mobile) ============
-menuToggle.addEventListener('click', () => sidebarEl.classList.toggle('open'));
-
-// ============ Chat list (logged-in only) ============
 async function loadChats() {
   const res = await fetch('/api/chats');
   chats = res.ok ? await res.json() : [];
@@ -454,21 +1118,9 @@ function renderSidebar(filter = '') {
     chatListEl.appendChild(row);
   });
 }
-searchInput.addEventListener('input', () => renderSidebar(searchInput.value));
 
 function showHero() { heroEl.style.display = 'flex'; chatEl.style.display = 'none'; chatTitleEl.textContent = 'Jarvis AI'; }
 function showChatView() { heroEl.style.display = 'none'; chatEl.style.display = 'flex'; }
-
-newChatBtn.addEventListener('click', () => {
-  if (isLoggedIn) {
-    activeChatId = null;
-    renderSidebar(searchInput.value);
-  } else {
-    guestChatId = crypto.randomUUID();
-  }
-  showHero();
-  sidebarEl.classList.remove('open');
-});
 
 async function selectChat(id) {
   const c = chats.find(x => x.id === id);
@@ -499,7 +1151,6 @@ async function ensureActiveChat() {
   return data.id;
 }
 
-// ============ Bubbles ============
 function renderMarkdown(text) {
   const raw = marked.parse(text || '');
   return DOMPurify.sanitize(raw);
@@ -559,7 +1210,7 @@ function renderFilePreview(p) {
     chatEl.appendChild(card);
     new Chart(canvas, {
       type: 'bar',
-      data: { labels: p.chart.values.map((_, i) => i + 1), datasets: [{ label: p.chart.label, data: p.chart.values, backgroundColor: '#7c3aed' }] },
+      data: { labels: p.chart.values.map((_, i) => i + 1), datasets: [{ label: p.chart.label, data: p.chart.values, backgroundColor: '#7c6ee6' }] },
       options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
     });
   } else {
@@ -576,12 +1227,6 @@ function speak(text) {
   window.speechSynthesis.speak(utter);
 }
 
-// ============ File attach ============
-attachBtn.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (e) => {
-  attachedFiles = attachedFiles.concat(Array.from(e.target.files)).slice(0, 5);
-  renderFileChips();
-});
 function renderFileChips() {
   fileChipsEl.innerHTML = '';
   attachedFiles.forEach((f, idx) => {
@@ -606,18 +1251,11 @@ function renderFileChips() {
   if (attachedFiles.length === 0) fileInput.value = '';
 }
 
-// ============ Send / Stop ============
 function setGenerating(state) {
   isGenerating = state;
   sendBtn.textContent = state ? '■' : '➤';
   sendBtn.classList.toggle('stopMode', state);
 }
-
-sendBtn.addEventListener('click', () => {
-  if (isGenerating) { if (currentController) currentController.abort(); return; }
-  sendMessage(inputEl.value);
-});
-inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !isGenerating) sendMessage(inputEl.value); });
 
 async function sendMessage(text) {
   if (!text.trim() && attachedFiles.length === 0) return;
@@ -697,45 +1335,7 @@ async function sendMessage(text) {
     currentController = null;
   }
 }
-
-// ============ Export ============
-exportBtn.addEventListener('click', () => {
-  const bubbles = Array.from(chatEl.querySelectorAll('.bubble')).map(b => {
-    const who = b.classList.contains('user') ? 'You' : 'Jarvis';
-    const body = b.querySelector('.body');
-    return `${who}: ${body ? body.dataset.raw || body.textContent : ''}`;
-  }).join('\n\n');
-  if (!bubbles) return;
-  const blob = new Blob([bubbles], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = (chatTitleEl.textContent || 'chat') + '.txt';
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-// ============ Voice input ============
-let recognizing = false;
-let recognition = null;
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (SpeechRecognition) {
-  recognition = new SpeechRecognition();
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.lang = 'hi-IN';
-  recognition.onstart = () => { recognizing = true; micBtn.classList.add('active'); statusEl.textContent = '🎙️ Sun raha hoon...'; };
-  recognition.onend = () => { recognizing = false; micBtn.classList.remove('active'); statusEl.textContent = '🟢 Ready'; };
-  recognition.onresult = (event) => sendMessage(event.results[0][0].transcript);
-  micBtn.addEventListener('click', () => { if (recognizing) { recognition.stop(); return; } recognition.start(); });
-} else {
-  micBtn.disabled = true;
-  micBtn.title = 'Yeh browser voice input support nahi karta (Chrome try karo)';
-}
-
-// ============ Init ============
-checkAuth();
 </script>
 
 </body>
 </html>
-
