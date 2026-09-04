@@ -149,9 +149,9 @@
   .demoBody { padding: 24px; min-height: 260px; }
   .demoMsg { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
   .demoMsg.user { justify-content: flex-end; }
-  .demoAvatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-  .demoAvatar.ai { background: var(--grad); color: white; }
-  .demoAvatar.user { background: var(--panel); color: var(--muted); }
+  .demoAvatar { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .demoAvatar.ai { background: var(--grad); color: white; box-shadow: 0 4px 12px rgba(124,110,230,0.3); }
+  .demoAvatar.user { background: var(--panel); color: var(--muted); border: 1px solid var(--border); border-radius: 50%; }
   .demoBubble { padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; max-width: 380px; }
   .demoBubble.ai { background: var(--panel); border-bottom-left-radius: 4px; color: var(--text); }
   .demoBubble.user { background: var(--grad); color: white; border-bottom-right-radius: 4px; }
@@ -227,7 +227,7 @@
   }
 
   /* ============================================================
-     APP VIEW (chat application — unchanged functionality)
+     APP VIEW (chat application)
      ============================================================ */
   #appView { display: none; height: 100vh; }
   #appView.show { display: flex; }
@@ -314,8 +314,20 @@
     padding: 10px 18px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 6px 18px rgba(124,110,230,0.3);
   }
 
-  #sidebarBottom { border-top: 1px solid var(--border); padding-top: 8px; display: flex; flex-direction: column; gap: 2px; }
-  #userLabel { font-size: 12px; color: var(--muted); padding: 6px 12px; font-weight: 600; font-family: var(--font-mono); }
+  /* ---- "Cloud style" icon row: mute/voice, theme, account — pill-shaped circular
+         buttons that mirror the landing page's heroChip / capsulePill treatment ---- */
+  #sidebarBottom { border-top: 1px solid var(--border); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+  #userLabel { font-size: 12px; color: var(--muted); padding: 0 4px; font-weight: 600; font-family: var(--font-mono); }
+  .sidebarIconRow { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
+  .sideIconBtn {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--panel); border: 1px solid var(--border); color: var(--muted);
+    font-size: 16px; cursor: pointer; transition: all 0.15s;
+  }
+  .sideIconBtn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,110,230,0.08); }
+  .sideIconBtn.on { background: var(--grad); border-color: transparent; color: white; box-shadow: 0 4px 14px rgba(124,110,230,0.3); }
+  .sideIconBtn.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(229,72,77,0.08); }
 
   #main { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
   #topbar {
@@ -350,10 +362,15 @@
   #heroChipsApp { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 560px; margin-top: 4px; }
 
   #chat { flex: 1; overflow-y: auto; padding: 25px 15%; display: flex; flex-direction: column; gap: 18px; }
+
+  /* message row now pairs an avatar (matching the landing "J" brand mark) with the bubble */
+  .msgRow { display: flex; align-items: flex-start; gap: 10px; max-width: 100%; }
+  .msgRow.ai { align-self: flex-start; max-width: 80%; }
+  .msgRow.user { align-self: flex-end; flex-direction: row-reverse; max-width: 70%; }
+
   .bubble { max-width: 100%; border-radius: 18px; padding: 12px 17px; font-size: 15px; line-height: 1.65; word-wrap: break-word; position: relative; }
-  .bubble.user { align-self: flex-end; background: var(--grad); color: white; border-bottom-right-radius: 4px; max-width: 70%; white-space: pre-wrap; box-shadow: 0 8px 22px rgba(124,110,230,0.25); }
-  .bubble.ai { align-self: flex-start; background: var(--bubble-ai); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-  .bubble .name { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; opacity: 0.7; font-family: var(--font-mono); }
+  .bubble.user { background: var(--grad); color: white; border-bottom-right-radius: 4px; white-space: pre-wrap; box-shadow: 0 8px 22px rgba(124,110,230,0.25); }
+  .bubble.ai { background: var(--bubble-ai); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
   .bubble .copyBtn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; margin-top: 6px; padding: 0; font-weight: 600; }
   .bubble .copyBtn:hover { color: var(--accent); }
 
@@ -374,21 +391,28 @@
 
   #modeRow { display: flex; gap: 8px; margin: 0 15% 8px 15%; }
   .modeBtn {
-    display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 20px;
-    border: 1px solid var(--border); background: var(--panel); color: var(--muted);
-    cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit;
+    display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--card); color: var(--muted);
+    cursor: pointer; font-size: 12.5px; font-weight: 500; font-family: inherit; transition: all 0.15s;
   }
-  .modeBtn:hover { border-color: var(--accent); color: var(--text); }
-  .modeBtn.active { background: var(--grad); border-color: transparent; color: white; box-shadow: 0 4px 14px rgba(124,110,230,0.3); }
+  .modeBtn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,110,230,0.06); }
+  .modeBtn.active { background: linear-gradient(135deg, rgba(124,110,230,0.22), rgba(96,165,250,0.12)); border-color: rgba(124,110,230,0.35); color: var(--text); }
 
+  /* Cloud-style circular action buttons in the composer, matching the landing
+     page's send button + hero chip hover treatment */
   #inputWrap { padding: 4px 15% 22px 15%; }
   #inputBarOuter { border-radius: 26px; padding: 1.5px; background: linear-gradient(135deg, rgba(124,110,230,0.5), rgba(79,163,227,0.3)); }
   #inputBar { display: flex; align-items: center; gap: 6px; background: var(--card); border-radius: 25px; padding: 8px 8px 8px 16px; }
   #msgInput { flex: 1; border: none; background: transparent; color: var(--text); font-size: 15px; outline: none; padding: 8px 0; font-family: inherit; }
-  button.roundBtn { background: transparent; border: none; color: var(--text); border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  button.roundBtn:hover { background: var(--hover); }
-  button.roundBtn.active { color: var(--danger); }
-  #sendBtn { background: var(--grad); color: white; border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 16px; flex-shrink: 0; box-shadow: 0 4px 14px rgba(124,110,230,0.35); }
+  button.roundBtn {
+    background: var(--panel); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s;
+  }
+  button.roundBtn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,110,230,0.08); }
+  button.roundBtn.active { background: var(--grad); color: white; border-color: transparent; box-shadow: 0 4px 14px rgba(124,110,230,0.35); }
+  #sendBtn { background: var(--grad); color: white; border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 16px; flex-shrink: 0; box-shadow: 0 4px 14px rgba(124,110,230,0.35); transition: opacity .15s; }
+  #sendBtn:hover { opacity: .9; }
   #sendBtn.stopMode { background: var(--danger); box-shadow: none; }
   #hint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; font-family: var(--font-mono); }
 
@@ -399,6 +423,7 @@
     #chat, #fileChips, #modeRow { padding-left: 5%; padding-right: 5%; }
     #inputWrap { padding-left: 5%; padding-right: 5%; }
     #hero h1 { font-size: 32px; }
+    .msgRow.ai, .msgRow.user { max-width: 92%; }
   }
 </style>
 </head>
@@ -686,9 +711,11 @@ for item in items:
 
     <div id="sidebarBottom">
       <div id="userLabel"></div>
-      <button class="sideBtn" id="ttsBtn">🔊 Voice: On</button>
-      <button class="sideBtn" id="themeBtn">🌙 Dark mode</button>
-      <button class="sideBtn" id="authActionBtn">🔐 Login / Sign up</button>
+      <div class="sidebarIconRow">
+        <button class="sideIconBtn on" id="ttsBtn" title="Voice: On">🔊</button>
+        <button class="sideIconBtn" id="themeBtn" title="Dark mode">🌙</button>
+        <button class="sideIconBtn" id="authActionBtn" title="Login / Sign up">🔐</button>
+      </div>
     </div>
   </div>
 
@@ -834,7 +861,7 @@ document.querySelectorAll('#demoTabBar .tabBtn').forEach(btn => {
 });
 
 // ======================================================================
-// CHAT APP (unchanged functionality) — initialised on first entry
+// CHAT APP — initialised on first entry into the app view
 // ======================================================================
 let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError, authSubmitBtn,
     authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
@@ -895,7 +922,7 @@ function initApp() {
   codeModeBtn.addEventListener('click', () => setMode('code'));
 
   authCloseBtn.addEventListener('click', closeAuth);
-  authActionBtn.addEventListener('click', openAuth);
+  authActionBtn.addEventListener('click', () => authActionBtn.onclick ? null : openAuth());
   guestLoginBtn.addEventListener('click', openAuth);
   document.getElementById('brand').addEventListener('click', backToLanding);
 
@@ -954,9 +981,9 @@ function initApp() {
   inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !isGenerating) sendMessage(inputEl.value); });
 
   exportBtn.addEventListener('click', () => {
-    const bubbles = Array.from(chatEl.querySelectorAll('.bubble')).map(b => {
-      const who = b.classList.contains('user') ? 'You' : 'Jarvis';
-      const body = b.querySelector('.body');
+    const bubbles = Array.from(chatEl.querySelectorAll('.msgRow')).map(row => {
+      const who = row.classList.contains('user') ? 'You' : 'Jarvis';
+      const body = row.querySelector('.body');
       return `${who}: ${body ? body.dataset.raw || body.textContent : ''}`;
     }).join('\n\n');
     if (!bubbles) return;
@@ -1042,7 +1069,9 @@ async function enterLoggedInMode(username) {
   guestNotice.style.display = 'none';
   guestBadge.style.display = 'none';
   heroSub.style.display = 'none';
-  authActionBtn.textContent = '🚪 Logout';
+  authActionBtn.textContent = '🚪';
+  authActionBtn.title = 'Logout';
+  authActionBtn.classList.remove('on');
   authActionBtn.onclick = doLogout;
   await loadChats();
   showHero();
@@ -1056,20 +1085,24 @@ function enterGuestMode() {
   guestNotice.style.display = 'flex';
   guestBadge.style.display = 'inline-block';
   heroSub.style.display = 'block';
-  authActionBtn.textContent = '🔐 Login / Sign up';
+  authActionBtn.textContent = '🔐';
+  authActionBtn.title = 'Login / Sign up';
+  authActionBtn.classList.remove('on');
   authActionBtn.onclick = openAuth;
   guestChatId = crypto.randomUUID();
   showHero();
 }
 
 function applyTheme(mode) {
-  if (mode === 'dark') { document.body.classList.add('dark'); themeBtn.textContent = '☀️ Light mode'; }
-  else { document.body.classList.remove('dark'); themeBtn.textContent = '🌙 Dark mode'; }
+  if (mode === 'dark') { document.body.classList.add('dark'); themeBtn.textContent = '☀️'; themeBtn.title = 'Light mode'; }
+  else { document.body.classList.remove('dark'); themeBtn.textContent = '🌙'; themeBtn.title = 'Dark mode'; }
   localStorage.setItem('jarvis_theme', mode);
 }
 
 function applyTts(mode) {
-  ttsBtn.textContent = mode === 'on' ? '🔊 Voice: On' : '🔇 Voice: Off';
+  ttsBtn.textContent = mode === 'on' ? '🔊' : '🔇';
+  ttsBtn.title = mode === 'on' ? 'Voice: On' : 'Voice: Off (muted)';
+  ttsBtn.classList.toggle('on', mode === 'on');
   localStorage.setItem('jarvis_tts', mode);
 }
 
@@ -1156,17 +1189,25 @@ function renderMarkdown(text) {
   return DOMPurify.sanitize(raw);
 }
 
+/* addBubble/addTypingBubble now mirror the landing-page demo's message design:
+   a small gradient "J" avatar (or "U" for the user) next to the bubble,
+   instead of an emoji name label — keeps the AI's visual identity consistent
+   across the marketing page and the real app. */
 function addBubble(text, isUser) {
+  const row = document.createElement('div');
+  row.className = 'msgRow ' + (isUser ? 'user' : 'ai');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'demoAvatar ' + (isUser ? 'user' : 'ai');
+  avatar.textContent = isUser ? 'U' : 'J';
+
   const b = document.createElement('div');
   b.className = 'bubble ' + (isUser ? 'user' : 'ai');
-  const name = document.createElement('span');
-  name.className = 'name';
-  name.textContent = isUser ? '👤 You' : '🤖 Jarvis';
   const body = document.createElement('div');
   body.className = 'body';
   if (isUser) { body.textContent = text; }
   else { body.innerHTML = renderMarkdown(text); }
-  b.appendChild(name); b.appendChild(body);
+  b.appendChild(body);
 
   if (!isUser) {
     const copyBtn = document.createElement('button');
@@ -1180,18 +1221,21 @@ function addBubble(text, isUser) {
     b.appendChild(copyBtn);
   }
   body.dataset.raw = text;
-  chatEl.appendChild(b);
+
+  row.appendChild(avatar);
+  row.appendChild(b);
+  chatEl.appendChild(row);
   chatEl.scrollTop = chatEl.scrollHeight;
   return body;
 }
 
 function addTypingBubble() {
-  const b = document.createElement('div');
-  b.className = 'bubble ai';
-  b.innerHTML = '<span class="name">🤖 Jarvis</span><div class="body typingDots"><span></span><span></span><span></span></div>';
-  chatEl.appendChild(b);
+  const row = document.createElement('div');
+  row.className = 'msgRow ai';
+  row.innerHTML = '<div class="demoAvatar ai">J</div><div class="bubble ai"><div class="body typingDots"><span></span><span></span><span></span></div></div>';
+  chatEl.appendChild(row);
   chatEl.scrollTop = chatEl.scrollHeight;
-  return b.querySelector('.body');
+  return row.querySelector('.body');
 }
 
 function renderFilePreview(p) {
