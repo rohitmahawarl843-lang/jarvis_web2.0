@@ -6,14 +6,18 @@ MULTIPLE Gemini API keys with automatic fallback on quota errors.
 """
 import os
 import io
+import re
 import json
 import uuid
+import random
 import secrets
 import hashlib
+import smtplib
 import mimetypes
 import itertools
 import threading
-from datetime import datetime, timezone
+from email.mime.text import MIMEText
+from datetime import datetime, timezone, timedelta
 from typing import List
 
 from fastapi import FastAPI, Request, Response, Form, File, UploadFile
@@ -53,6 +57,24 @@ users_col = mongo_db["users"]
 sessions_col = mongo_db["sessions"]
 chats_col = mongo_db["chats"]
 messages_col = mongo_db["messages"]
+otps_col = mongo_db["otps"]
+
+# ---------------- Email (Gmail SMTP) for OTP ----------------
+GMAIL_USER = os.environ.get("GMAIL_USER", "").strip()
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def send_otp_email(to_email: str, otp: str):
+    if not GMAIL_USER or not GMAIL_APP_PASSWORD:
+        raise RuntimeError("GMAIL_USER / GMAIL_APP_PASSWORD env variables set nahi hain.")
+    msg = MIMEText(f"Aapka World AI signup OTP hai: {otp}\n\nYeh OTP 5 minute ke liye valid hai.")
+    msg["Subject"] = "World AI - Aapka OTP code"
+    msg["From"] = GMAIL_USER
+    msg["To"] = to_email
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
+        server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+        server.sendmail(GMAIL_USER, [to_email], msg.as_string())
 
 # ---------------- Multiple API keys support (multi-provider) ----------------
 # Gemini: GEMINI_API_KEYS="key1,key2,key3" (comma separated) on Railway.
@@ -114,11 +136,14 @@ guest_sessions = {}
 # ---------------- Database (MongoDB) ----------------
 
 def init_db():
-    users_col.create_index("username", unique=True)
+    users_col.create_index("email", unique=True, sparse=True)
     sessions_col.create_index("token", unique=True)
     chats_col.create_index("chat_id", unique=True)
     chats_col.create_index("user_id")
     messages_col.create_index("chat_id")
+    # OTP entries auto-delete themselves 5 minute baad (TTL index)
+    otps_col.create_index("created_at", expireAfterSeconds=300)
+    otps_col.create_index("email")
 
 init_db()
 
@@ -149,7 +174,7 @@ def get_current_user(request: Request):
     user = users_col.find_one({"_id": session["user_id"]})
     if not user:
         return None
-    return {"id": user["_id"], "username": user["username"]}
+    return {"id": user["_id"], "email": user["email"]}
 
 
 def unauth():
@@ -313,43 +338,72 @@ def health():
 
 # ---------------- Auth routes ----------------
 
+@app.post("/api/send-otp")
+async def send_otp(email: str = Form(...)):
+    email = email.strip().lower()
+    if not EMAIL_RE.match(email):
+        return JSONResponse({"error": "Sahi email address daalo."}, status_code=400)
+
+    if users_col.find_one({"email": email}):
+        return JSONResponse({"error": "Is email se account pehle se bana hua hai. Log in karo."}, status_code=400)
+
+    otp = f"{random.randint(0, 999999):06d}"
+    otps_col.delete_many({"email": email})  # purana OTP hata do agar tha
+    otps_col.insert_one({"email": email, "otp": otp, "created_at": now_utc()})
+
+    try:
+        send_otp_email(email, otp)
+    except Exception as e:
+        return JSONResponse({"error": f"OTP email bhejne mein error aaya: {e}"}, status_code=500)
+
+    return {"status": "sent"}
+
+
 @app.post("/api/signup")
-async def signup(response: Response, username: str = Form(...), password: str = Form(...)):
-    username = username.strip()
-    if len(username) < 3 or len(password) < 4:
-        return JSONResponse({"error": "Username kam se kam 3 aur password kam se kam 4 characters ka ho."}, status_code=400)
+async def signup(response: Response, email: str = Form(...), otp: str = Form(...), password: str = Form(...)):
+    email = email.strip().lower()
+    if not EMAIL_RE.match(email):
+        return JSONResponse({"error": "Sahi email address daalo."}, status_code=400)
+    if len(password) < 4:
+        return JSONResponse({"error": "Password kam se kam 4 characters ka ho."}, status_code=400)
+
+    otp_row = otps_col.find_one({"email": email})
+    if not otp_row or otp_row["otp"] != otp.strip():
+        return JSONResponse({"error": "OTP galat ya expire ho chuka hai. Dobara bhejo."}, status_code=400)
 
     salt, pwd_hash = hash_password(password)
     try:
         result = users_col.insert_one({
-            "username": username,
+            "email": email,
             "salt": salt,
             "password_hash": pwd_hash,
             "created_at": now_utc(),
         })
         user_id = result.inserted_id
     except DuplicateKeyError:
-        return JSONResponse({"error": "Ye username pehle se liya gaya hai."}, status_code=400)
+        return JSONResponse({"error": "Is email se account pehle se bana hua hai."}, status_code=400)
+
+    otps_col.delete_many({"email": email})
 
     token = secrets.token_urlsafe(32)
     sessions_col.insert_one({"token": token, "user_id": user_id, "created_at": now_utc()})
 
     response.set_cookie("session_token", token, httponly=True, max_age=60 * 60 * 24 * 30, samesite="lax")
-    return {"username": username}
+    return {"email": email}
 
 
 @app.post("/api/login")
-async def login(response: Response, username: str = Form(...), password: str = Form(...)):
-    row = users_col.find_one({"username": username.strip()})
+async def login(response: Response, email: str = Form(...), password: str = Form(...)):
+    row = users_col.find_one({"email": email.strip().lower()})
 
     if not row or not verify_password(password, row["salt"], row["password_hash"]):
-        return JSONResponse({"error": "Username ya password galat hai."}, status_code=400)
+        return JSONResponse({"error": "Email ya password galat hai."}, status_code=400)
 
     token = secrets.token_urlsafe(32)
     sessions_col.insert_one({"token": token, "user_id": row["_id"], "created_at": now_utc()})
 
     response.set_cookie("session_token", token, httponly=True, max_age=60 * 60 * 24 * 30, samesite="lax")
-    return {"username": row["username"]}
+    return {"email": row["email"]}
 
 
 @app.post("/api/logout")
@@ -366,7 +420,7 @@ def me(request: Request):
     user = get_current_user(request)
     if not user:
         return unauth()
-    return {"username": user["username"]}
+    return {"email": user["email"]}
 
 
 # ---------------- Chat CRUD (logged-in users only) ----------------
