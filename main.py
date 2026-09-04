@@ -65,6 +65,18 @@ GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
+import certifi
+import socket
+
+_orig_getaddrinfo = socket.getaddrinfo
+
+
+def _ipv4_only_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+    # Railway jaise kai hosts par IPv6 route nahi hota, isliye SMTP ke liye
+    # IPv4 par force karte hain taaki "Network is unreachable" na aaye.
+    return _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+
+
 def send_otp_email(to_email: str, otp: str):
     if not GMAIL_USER or not GMAIL_APP_PASSWORD:
         raise RuntimeError("GMAIL_USER / GMAIL_APP_PASSWORD env variables set nahi hain.")
@@ -72,9 +84,14 @@ def send_otp_email(to_email: str, otp: str):
     msg["Subject"] = "World AI - Aapka OTP code"
     msg["From"] = GMAIL_USER
     msg["To"] = to_email
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
-        server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-        server.sendmail(GMAIL_USER, [to_email], msg.as_string())
+
+    socket.getaddrinfo = _ipv4_only_getaddrinfo
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
+            server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+            server.sendmail(GMAIL_USER, [to_email], msg.as_string())
+    finally:
+        socket.getaddrinfo = _orig_getaddrinfo
 
 # ---------------- Multiple API keys support (multi-provider) ----------------
 # Gemini: GEMINI_API_KEYS="key1,key2,key3" (comma separated) on Railway.
