@@ -22,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
+import certifi
 
 from google import genai
 from google.genai import types
@@ -40,7 +41,7 @@ MONGO_URI = os.environ.get("MONGO_URI", "").strip()
 if not MONGO_URI:
     raise RuntimeError("MONGO_URI environment variable set nahi hai. MongoDB Atlas connection string set karo.")
 
-mongo_client = MongoClient(MONGO_URI)
+mongo_client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
 try:
     mongo_db = mongo_client.get_default_database()
     if mongo_db is None:
