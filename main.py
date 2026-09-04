@@ -10,16 +10,18 @@ import json
 import uuid
 import secrets
 import hashlib
-import sqlite3
 import mimetypes
 import itertools
 import threading
-from contextlib import contextmanager
+from datetime import datetime, timezone
 from typing import List
 
 from fastapi import FastAPI, Request, Response, Form, File, UploadFile
 from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+
+from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 
 from google import genai
 from google.genai import types
@@ -30,9 +32,26 @@ except ImportError:
     OpenAI = None
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_DIR = os.path.join(APP_DIR, "data")
-os.makedirs(DB_DIR, exist_ok=True)
-DB_PATH = os.path.join(DB_DIR, "jarvis.db")
+
+# ---------------- MongoDB (Atlas) ----------------
+# Railway/host par MONGO_URI env variable set karo, jaisa Atlas ne diya tha:
+# mongodb+srv://user:password@cluster0.xxxxx.mongodb.net/
+MONGO_URI = os.environ.get("MONGO_URI", "").strip()
+if not MONGO_URI:
+    raise RuntimeError("MONGO_URI environment variable set nahi hai. MongoDB Atlas connection string set karo.")
+
+mongo_client = MongoClient(MONGO_URI)
+try:
+    mongo_db = mongo_client.get_default_database()
+    if mongo_db is None:
+        raise Exception("no default db in URI")
+except Exception:
+    mongo_db = mongo_client["jarvis"]  # URI mein db name nahi diya, "jarvis" use karo
+
+users_col = mongo_db["users"]
+sessions_col = mongo_db["sessions"]
+chats_col = mongo_db["chats"]
+messages_col = mongo_db["messages"]
 
 # ---------------- Multiple API keys support (multi-provider) ----------------
 # Gemini: GEMINI_API_KEYS="key1,key2,key3" (comma separated) on Railway.
@@ -91,48 +110,20 @@ code ko actually chala kar result verify karo, sirf likh kar mat do."""
 
 guest_sessions = {}
 
-# ---------------- Database ----------------
-
-@contextmanager
-def db_conn():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
-
+# ---------------- Database (MongoDB) ----------------
 
 def init_db():
-    with db_conn() as db:
-        db.execute("""CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            salt TEXT NOT NULL,
-            password_hash TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )""")
-        db.execute("""CREATE TABLE IF NOT EXISTS sessions (
-            token TEXT PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )""")
-        db.execute("""CREATE TABLE IF NOT EXISTS chats (
-            id TEXT PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            title TEXT NOT NULL DEFAULT 'New chat',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )""")
-        db.execute("""CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            chat_id TEXT NOT NULL,
-            role TEXT NOT NULL,
-            text TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )""")
-        db.commit()
+    users_col.create_index("username", unique=True)
+    sessions_col.create_index("token", unique=True)
+    chats_col.create_index("chat_id", unique=True)
+    chats_col.create_index("user_id")
+    messages_col.create_index("chat_id")
 
 init_db()
+
+
+def now_utc():
+    return datetime.now(timezone.utc)
 
 # ---------------- Auth helpers ----------------
 
@@ -151,12 +142,13 @@ def get_current_user(request: Request):
     token = request.cookies.get("session_token")
     if not token:
         return None
-    with db_conn() as db:
-        row = db.execute(
-            "SELECT u.id, u.username FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ?",
-            (token,),
-        ).fetchone()
-    return row
+    session = sessions_col.find_one({"token": token})
+    if not session:
+        return None
+    user = users_col.find_one({"_id": session["user_id"]})
+    if not user:
+        return None
+    return {"id": user["_id"], "username": user["username"]}
 
 
 def unauth():
@@ -328,17 +320,18 @@ async def signup(response: Response, username: str = Form(...), password: str = 
 
     salt, pwd_hash = hash_password(password)
     try:
-        with db_conn() as db:
-            db.execute("INSERT INTO users (username, salt, password_hash) VALUES (?, ?, ?)", (username, salt, pwd_hash))
-            db.commit()
-            user_id = db.execute("SELECT id FROM users WHERE username=?", (username,)).fetchone()["id"]
-    except sqlite3.IntegrityError:
+        result = users_col.insert_one({
+            "username": username,
+            "salt": salt,
+            "password_hash": pwd_hash,
+            "created_at": now_utc(),
+        })
+        user_id = result.inserted_id
+    except DuplicateKeyError:
         return JSONResponse({"error": "Ye username pehle se liya gaya hai."}, status_code=400)
 
     token = secrets.token_urlsafe(32)
-    with db_conn() as db:
-        db.execute("INSERT INTO sessions (token, user_id) VALUES (?, ?)", (token, user_id))
-        db.commit()
+    sessions_col.insert_one({"token": token, "user_id": user_id, "created_at": now_utc()})
 
     response.set_cookie("session_token", token, httponly=True, max_age=60 * 60 * 24 * 30, samesite="lax")
     return {"username": username}
@@ -346,16 +339,13 @@ async def signup(response: Response, username: str = Form(...), password: str = 
 
 @app.post("/api/login")
 async def login(response: Response, username: str = Form(...), password: str = Form(...)):
-    with db_conn() as db:
-        row = db.execute("SELECT * FROM users WHERE username=?", (username.strip(),)).fetchone()
+    row = users_col.find_one({"username": username.strip()})
 
     if not row or not verify_password(password, row["salt"], row["password_hash"]):
         return JSONResponse({"error": "Username ya password galat hai."}, status_code=400)
 
     token = secrets.token_urlsafe(32)
-    with db_conn() as db:
-        db.execute("INSERT INTO sessions (token, user_id) VALUES (?, ?)", (token, row["id"]))
-        db.commit()
+    sessions_col.insert_one({"token": token, "user_id": row["_id"], "created_at": now_utc()})
 
     response.set_cookie("session_token", token, httponly=True, max_age=60 * 60 * 24 * 30, samesite="lax")
     return {"username": row["username"]}
@@ -365,9 +355,7 @@ async def login(response: Response, username: str = Form(...), password: str = F
 def logout(request: Request, response: Response):
     token = request.cookies.get("session_token")
     if token:
-        with db_conn() as db:
-            db.execute("DELETE FROM sessions WHERE token=?", (token,))
-            db.commit()
+        sessions_col.delete_one({"token": token})
     response.delete_cookie("session_token")
     return {"status": "logged out"}
 
@@ -387,12 +375,8 @@ def list_chats(request: Request):
     user = get_current_user(request)
     if not user:
         return unauth()
-    with db_conn() as db:
-        rows = db.execute(
-            "SELECT id, title, created_at FROM chats WHERE user_id=? ORDER BY created_at DESC",
-            (user["id"],),
-        ).fetchall()
-    return [dict(r) for r in rows]
+    rows = chats_col.find({"user_id": user["id"]}).sort("created_at", -1)
+    return [{"id": r["chat_id"], "title": r["title"], "created_at": r["created_at"]} for r in rows]
 
 
 @app.post("/api/chats")
@@ -401,9 +385,12 @@ def create_chat(request: Request):
     if not user:
         return unauth()
     chat_id = str(uuid.uuid4())
-    with db_conn() as db:
-        db.execute("INSERT INTO chats (id, user_id, title) VALUES (?, ?, ?)", (chat_id, user["id"], "New chat"))
-        db.commit()
+    chats_col.insert_one({
+        "chat_id": chat_id,
+        "user_id": user["id"],
+        "title": "New chat",
+        "created_at": now_utc(),
+    })
     return {"id": chat_id, "title": "New chat"}
 
 
@@ -412,14 +399,11 @@ def get_messages(chat_id: str, request: Request):
     user = get_current_user(request)
     if not user:
         return unauth()
-    with db_conn() as db:
-        chat_row = db.execute("SELECT id FROM chats WHERE id=? AND user_id=?", (chat_id, user["id"])).fetchone()
-        if not chat_row:
-            return JSONResponse({"error": "Chat not found"}, status_code=404)
-        rows = db.execute(
-            "SELECT role, text, created_at FROM messages WHERE chat_id=? ORDER BY id ASC", (chat_id,)
-        ).fetchall()
-    return [dict(r) for r in rows]
+    chat_row = chats_col.find_one({"chat_id": chat_id, "user_id": user["id"]})
+    if not chat_row:
+        return JSONResponse({"error": "Chat not found"}, status_code=404)
+    rows = messages_col.find({"chat_id": chat_id}).sort("_id", 1)
+    return [{"role": r["role"], "text": r["text"], "created_at": r["created_at"]} for r in rows]
 
 
 @app.put("/api/chats/{chat_id}")
@@ -427,9 +411,10 @@ async def rename_chat(chat_id: str, request: Request, title: str = Form(...)):
     user = get_current_user(request)
     if not user:
         return unauth()
-    with db_conn() as db:
-        db.execute("UPDATE chats SET title=? WHERE id=? AND user_id=?", (title.strip()[:60] or "New chat", chat_id, user["id"]))
-        db.commit()
+    chats_col.update_one(
+        {"chat_id": chat_id, "user_id": user["id"]},
+        {"$set": {"title": title.strip()[:60] or "New chat"}},
+    )
     return {"status": "ok"}
 
 
@@ -438,10 +423,8 @@ def delete_chat(chat_id: str, request: Request):
     user = get_current_user(request)
     if not user:
         return unauth()
-    with db_conn() as db:
-        db.execute("DELETE FROM messages WHERE chat_id=?", (chat_id,))
-        db.execute("DELETE FROM chats WHERE id=? AND user_id=?", (chat_id, user["id"]))
-        db.commit()
+    messages_col.delete_many({"chat_id": chat_id})
+    chats_col.delete_one({"chat_id": chat_id, "user_id": user["id"]})
     return {"status": "deleted"}
 
 
@@ -472,20 +455,20 @@ async def chat(
 
     chat_row = None
     if user:
-        with db_conn() as db:
-            chat_row = db.execute("SELECT * FROM chats WHERE id=? AND user_id=?", (chat_id, user["id"])).fetchone()
+        chat_row = chats_col.find_one({"chat_id": chat_id, "user_id": user["id"]})
         if not chat_row:
             def nf_stream():
                 yield f"data: {json.dumps({'error': 'Chat nahi mila.'})}\n\n"
             return StreamingResponse(nf_stream(), media_type="text/event-stream")
 
         if DAILY_MESSAGE_LIMIT > 0:
-            with db_conn() as db:
-                count = db.execute(
-                    """SELECT COUNT(*) c FROM messages m JOIN chats c2 ON m.chat_id = c2.id
-                       WHERE c2.user_id=? AND m.role='user' AND date(m.created_at) = date('now')""",
-                    (user["id"],),
-                ).fetchone()["c"]
+            today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            user_chat_ids = [c["chat_id"] for c in chats_col.find({"user_id": user["id"]}, {"chat_id": 1})]
+            count = messages_col.count_documents({
+                "chat_id": {"$in": user_chat_ids},
+                "role": "user",
+                "created_at": {"$gte": today_start},
+            })
             if count >= DAILY_MESSAGE_LIMIT:
                 def limit_stream():
                     yield f"data: {json.dumps({'error': f'Aaj ka {DAILY_MESSAGE_LIMIT} messages ka limit khatam ho gaya. Kal try karo.'})}\n\n"
@@ -503,10 +486,7 @@ async def chat(
     display_text = text or "Attached file(s) ka data analyze karo."
 
     if user:
-        with db_conn() as db:
-            history_rows = db.execute(
-                "SELECT role, text FROM messages WHERE chat_id=? ORDER BY id ASC", (chat_id,)
-            ).fetchall()
+        history_rows = messages_col.find({"chat_id": chat_id}).sort("_id", 1)
         history = [{"role": r["role"], "text": r["text"]} for r in history_rows]
     else:
         history = guest_sessions.setdefault(chat_id, [])
@@ -520,11 +500,9 @@ async def chat(
     contents.append(types.Content(role="user", parts=current_parts))
 
     if user:
-        with db_conn() as db:
-            db.execute("INSERT INTO messages (chat_id, role, text) VALUES (?, ?, ?)", (chat_id, "user", display_text))
-            if chat_row["title"] == "New chat":
-                db.execute("UPDATE chats SET title=? WHERE id=?", (display_text[:40], chat_id))
-            db.commit()
+        messages_col.insert_one({"chat_id": chat_id, "role": "user", "text": display_text, "created_at": now_utc()})
+        if chat_row["title"] == "New chat":
+            chats_col.update_one({"chat_id": chat_id}, {"$set": {"title": display_text[:40]}})
     else:
         history.append({"role": "user", "text": display_text})
 
@@ -532,9 +510,7 @@ async def chat(
 
     def save_ai_message(final_text):
         if user:
-            with db_conn() as db:
-                db.execute("INSERT INTO messages (chat_id, role, text) VALUES (?, ?, ?)", (chat_id, "ai", final_text))
-                db.commit()
+            messages_col.insert_one({"chat_id": chat_id, "role": "ai", "text": final_text, "created_at": now_utc()})
         else:
             history.append({"role": "ai", "text": final_text})
 
