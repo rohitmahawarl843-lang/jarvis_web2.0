@@ -151,7 +151,7 @@
   .demoMsg.user { justify-content: flex-end; }
   .demoAvatar { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
   .demoAvatar.ai { background: var(--grad); color: white; box-shadow: 0 4px 12px rgba(124,110,230,0.3); }
-  .demoAvatar.user { background: var(--panel); color: var(--muted); border: 1px solid var(--border); border-radius: 50%; }
+  .demoAvatar.user { background: linear-gradient(135deg, #34d399, #0ea5e9); color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(14,165,233,0.3); }
   .demoBubble { padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; max-width: 380px; }
   .demoBubble.ai { background: var(--panel); border-bottom-left-radius: 4px; color: var(--text); }
   .demoBubble.user { background: var(--grad); color: white; border-bottom-right-radius: 4px; }
@@ -462,7 +462,7 @@
   <section id="landHero">
     <div class="heroBadge"><span class="dot"></span>World AI 2.0 — ab web search aur code run kar sakta hai</div>
     <h1>Poocho World AI se <span class="grad cursorBlink" id="landTyped">kuch bhi.</span></h1>
-    <p class="sub">Aapka apna AI assistant — Hinglish mein baat karo, web search karwao, code likhwao ya chalwao, aur files padhwao. Sab kuch ek jagah.</p>
+    <p class="sub">Your own AI assistant — chat naturally, run web searches, write or execute code, and read your files. All in one place.</p>
 
     <div class="heroInputWrap">
       <div class="heroInputOuter">
@@ -475,10 +475,10 @@
 
     <div class="heroChips">
       <button class="heroChip" data-fill="Ek Python web scraper likh do">Python web scraper likho</button>
-      <button class="heroChip" data-fill="Mera business plan review karo">Business plan review</button>
+      <button class="heroChip" data-fill="Review my business plan">Business plan review</button>
       <button class="heroChip" data-fill="Is code mein bug dhundo">Code mein bug dhundo</button>
       <button class="heroChip" data-fill="Aaj ki taazi khabrein batao">Aaj ki khabrein</button>
-      <button class="heroChip" data-fill="Ek email draft likh do">Email draft karo</button>
+      <button class="heroChip" data-fill="Draft an email for me">Draft an email</button>
     </div>
 
     <div class="heroBadgeRow">
@@ -515,7 +515,7 @@
       <div class="demoBody" id="demoTabChat">
         <div class="demoMsg">
           <div class="demoAvatar ai">W</div>
-          <div class="demoBubble ai">Namaste! Main World AI hoon. Aaj kis kaam mein madad karoon?</div>
+          <div class="demoBubble ai">Hi! I'm World AI. What can I help you with today?</div>
         </div>
         <div class="demoMsg user">
           <div class="demoBubble user">Mera Python code optimize kar do</div>
@@ -523,12 +523,12 @@
         </div>
         <div class="demoMsg">
           <div class="demoAvatar ai">W</div>
-          <div class="demoBubble ai">Bilkul! Teen sudhaar dikh rahe hain:<br><br><strong>1. List comprehension</strong> use karo — loop se 3× fast.<br><strong>2. Repeated lookup cache</strong> karo loop se bahar.</div>
+          <div class="demoBubble ai">Sure! I can see three improvements:<br><br><strong>1. Use a list comprehension</strong> — 3x faster than the loop.<br><strong>2. Cache repeated lookups</strong> outside the loop.</div>
         </div>
       </div>
 
       <div class="demoBody" id="demoTabCode" style="display:none;">
-        <pre style="margin:0;"><span style="color:var(--accent)"># World AI ka suggestion: list comprehension use karo</span>
+        <pre style="margin:0;"><span style="color:var(--accent)"># World AI's suggestion: use a list comprehension</span>
 <span style="color:var(--accent2)">result</span> = [process(x) for x in data if x.valid]
 
 <span style="color:var(--accent)"># Loop ke bahar cache kiya lookup</span>
@@ -540,7 +540,7 @@ for item in items:
       <div class="demoBody" id="demoTabVision" style="display:none;">
         <div class="demoUpload">
           <div class="icon">📎</div>
-          <p style="margin:0;color:var(--muted);font-size:14px;">Image, screenshot ya file yahan drop karo</p>
+          <p style="margin:0;color:var(--muted);font-size:14px;">Drop an image, screenshot, or file here</p>
           <p style="margin:0;color:var(--muted);font-size:11px;font-family:var(--font-mono);">PNG · JPG · PDF · CSV · XLSX</p>
         </div>
       </div>
@@ -567,17 +567,17 @@ for item in items:
       <div class="featCard">
         <div class="featIcon" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🌐</div>
         <h3>Web Search</h3>
-        <p>Live internet se current events, prices, aur research turant nikaal ke laata hai.</p>
+        <p>Pulls current events, prices, and research live from the internet instantly.</p>
       </div>
       <div class="featCard">
         <div class="featIcon" style="background:rgba(96,165,250,0.15);color:#60a5fa;">💻</div>
         <h3>Code likho aur chalao</h3>
-        <p>40+ languages mein code likhta, debug karta, aur seedha chala kar result bhi dikhata hai.</p>
+        <p>Writes and debugs code in 40+ languages, and runs it to show you the actual result.</p>
       </div>
       <div class="featCard">
         <div class="featIcon" style="background:rgba(52,211,153,0.15);color:#34d399;">📄</div>
         <h3>File & Document analysis</h3>
-        <p>PDF, Excel, Word, images upload karo — World AI padh kar summary aur insights deta hai.</p>
+        <p>Upload PDFs, Excel, Word docs, or images — World AI reads them and gives you a summary and insights.</p>
       </div>
       <div class="featCard">
         <div class="featIcon" style="background:rgba(251,146,60,0.15);color:#fb923c;">🎙️</div>
@@ -609,21 +609,21 @@ for item in items:
         <div class="name">Normal Chat</div>
         <span class="tag" style="color:#a78bfa;">General</span>
         <p>Roz-marra ke sawaal, likhna, brainstorming, aur general madad ke liye.</p>
-        <span class="try" style="color:#a78bfa;">Ye mode try karo →</span>
+        <span class="try" style="color:#a78bfa;">Try this mode →</span>
       </div>
       <div class="modeCard" data-appmode="search">
         <div class="modeDot" style="background:#60a5fa;"></div>
         <div class="name">Web Search</div>
         <span class="tag" style="color:#60a5fa;">Live Data</span>
-        <p>Current events, prices, aur latest jaankari ke liye — World AI live web search karta hai.</p>
-        <span class="try" style="color:#60a5fa;">Ye mode try karo →</span>
+        <p>For current events, prices, and the latest info — World AI does a live web search.</p>
+        <span class="try" style="color:#60a5fa;">Try this mode →</span>
       </div>
       <div class="modeCard" data-appmode="code">
         <div class="modeDot" style="background:#34d399;"></div>
         <div class="name">Run Code</div>
         <span class="tag" style="color:#34d399;">Execute</span>
         <p>Code likhwao aur seedha chala kar result bhi dekho, bina kahin aur copy-paste kiye.</p>
-        <span class="try" style="color:#34d399;">Ye mode try karo →</span>
+        <span class="try" style="color:#34d399;">Try this mode →</span>
       </div>
     </div>
   </section>
@@ -644,11 +644,11 @@ for item in items:
   <!-- CTA -->
   <section class="landSection" id="landCta">
     <div class="ctaBox">
-      <h2>Ab shuru karo<br><span class="grad">apni sabse achhi conversation</span></h2>
-      <p>World AI free hai — bina card ke, bina wait ke. Bas type karo aur baat shuru karo.</p>
+      <h2>Get started<br><span class="grad">with your best conversation yet</span></h2>
+      <p>World AI is free — no card, no waiting. Just type and start chatting.</p>
       <div class="ctaBtns">
-        <button class="btnGradLg" id="ctaTryBtn">Free mein shuru karo →</button>
-        <button class="btnOutlineLg" id="ctaLoginBtn">Log in karo</button>
+        <button class="btnGradLg" id="ctaTryBtn">Get started for free →</button>
+        <button class="btnOutlineLg" id="ctaLoginBtn">Log in</button>
       </div>
     </div>
   </section>
@@ -689,17 +689,11 @@ for item in items:
     <div id="authBox">
       <button id="authCloseBtn">✕</button>
       <h2 id="authTitle">Log in</h2>
-      <input id="authEmail" type="email" placeholder="Email address" autocomplete="email" />
-      <div id="authOtpRow" style="display:none; gap:8px;">
-        <input id="authOtp" placeholder="6-digit OTP" autocomplete="one-time-code" inputmode="numeric" maxlength="6" style="flex:1;" />
-        <button type="button" id="authResendOtpBtn" style="flex-shrink:0;">Resend</button>
-      </div>
+      <input id="authUsername" placeholder="Username" autocomplete="username" />
       <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" />
       <div id="authError"></div>
-      <div id="authOtpNotice" style="display:none;"></div>
-      <button class="primary" id="authSendOtpBtn">OTP bhejo</button>
-      <button class="primary" id="authSubmitBtn" style="display:none;">Log in</button>
-      <div id="authToggle">Account nahi hai? <a id="authToggleLink">Sign up karo</a></div>
+      <button class="primary" id="authSubmitBtn">Log in</button>
+      <div id="authToggle">Don't have an account? <a id="authToggleLink">Sign up</a></div>
     </div>
   </div>
 
@@ -712,7 +706,7 @@ for item in items:
 
     <div id="guestNotice" style="display:none;">
       <span>👋 Guest mode mein ho.<br>Chat history save nahi hogi, refresh karte hi naya chat khulega.</span>
-      <button id="guestLoginBtn">Login / Sign up karo</button>
+      <button id="guestLoginBtn">Login / Sign up</button>
     </div>
 
     <div id="sidebarBottom">
@@ -742,9 +736,9 @@ for item in items:
       <div id="heroChipsApp">
         <button class="heroChip" data-fill="Ek Python web scraper likh do">Python web scraper likho</button>
         <button class="heroChip" data-fill="Aaj ki taazi khabrein batao">Aaj ki khabrein</button>
-        <button class="heroChip" data-fill="Mera business plan review karo">Business plan review</button>
+        <button class="heroChip" data-fill="Review my business plan">Business plan review</button>
         <button class="heroChip" data-fill="Is code mein bug dhundo">Code mein bug dhundo</button>
-        <button class="heroChip" data-fill="Ek email draft likh do">Email draft karo</button>
+        <button class="heroChip" data-fill="Draft an email for me">Draft an email</button>
       </div>
     </div>
     <div id="chat" style="display:none;"></div>
@@ -757,14 +751,14 @@ for item in items:
     <div id="inputWrap">
       <div id="inputBarOuter">
         <div id="inputBar">
-          <button class="roundBtn" id="attachBtn" title="File attach karo">📎</button>
+          <button class="roundBtn" id="attachBtn" title="Attach a file">📎</button>
           <input type="file" id="fileInput" hidden multiple accept="image/*,video/*,audio/*,.pdf,.txt,.csv,.xlsx,.xls,.docx" />
           <input id="msgInput" type="text" placeholder="Message World AI..." autocomplete="off" />
           <button class="roundBtn" id="micBtn" title="Bolke poocho">🎙️</button>
           <button id="sendBtn" title="Send">➤</button>
         </div>
       </div>
-      <div id="hint">World AI file padh sakta hai, web search kar sakta hai, aur code chala kar dikha sakta hai.</div>
+      <div id="hint">World AI can read files, search the web, and run code to show you results.</div>
     </div>
   </div>
 </div>
@@ -869,15 +863,13 @@ document.querySelectorAll('#demoTabBar .tabBtn').forEach(btn => {
 // ======================================================================
 // CHAT APP — initialised on first entry into the app view
 // ======================================================================
-let authOverlay, authCloseBtn, authTitle, authEmail, authOtpRow, authOtp, authResendOtpBtn,
-    authPassword, authError, authOtpNotice, authSendOtpBtn, authSubmitBtn,
+let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError, authSubmitBtn,
     authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
     sidebarEl, chatListEl, searchInput, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle,
     chatTitleEl, exportBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
     attachBtn, fileInput, searchModeBtn, codeModeBtn;
 
 let isSignup = false;
-let otpSent = false;
 let isLoggedIn = false;
 let chats = [];
 let activeChatId = null;
@@ -891,14 +883,9 @@ function initApp() {
   authOverlay = document.getElementById('authOverlay');
   authCloseBtn = document.getElementById('authCloseBtn');
   authTitle = document.getElementById('authTitle');
-  authEmail = document.getElementById('authEmail');
-  authOtpRow = document.getElementById('authOtpRow');
-  authOtp = document.getElementById('authOtp');
-  authResendOtpBtn = document.getElementById('authResendOtpBtn');
+  authUsername = document.getElementById('authUsername');
   authPassword = document.getElementById('authPassword');
   authError = document.getElementById('authError');
-  authOtpNotice = document.getElementById('authOtpNotice');
-  authSendOtpBtn = document.getElementById('authSendOtpBtn');
   authSubmitBtn = document.getElementById('authSubmitBtn');
   authToggle = document.getElementById('authToggle');
   authToggleLink = document.getElementById('authToggleLink');
@@ -939,88 +926,30 @@ function initApp() {
   guestLoginBtn.addEventListener('click', openAuth);
   document.getElementById('brand').addEventListener('click', backToLanding);
 
-  function resetAuthMode() {
-    otpSent = false;
-    authOtpRow.style.display = 'none';
-    authOtp.value = '';
-    authOtpNotice.style.display = 'none';
-    authOtpNotice.textContent = '';
-    authError.textContent = '';
-    if (isSignup) {
-      authSendOtpBtn.style.display = 'block';
-      authSubmitBtn.style.display = 'none';
-    } else {
-      authSendOtpBtn.style.display = 'none';
-      authSubmitBtn.style.display = 'block';
-    }
-  }
-
   authToggleLink.addEventListener('click', () => {
     isSignup = !isSignup;
     authTitle.textContent = isSignup ? 'Sign up' : 'Log in';
-    authSubmitBtn.textContent = isSignup ? 'Verify & Sign up' : 'Log in';
+    authSubmitBtn.textContent = isSignup ? 'Sign up' : 'Log in';
     authToggle.innerHTML = isSignup
-      ? 'Pehle se account hai? <a id="authToggleLink2">Log in karo</a>'
-      : 'Account nahi hai? <a id="authToggleLink">Sign up karo</a>';
+      ? 'Already have an account? <a id="authToggleLink2">Log in</a>'
+      : "Don't have an account? <a id=\"authToggleLink\">Sign up</a>";
     const relink = document.getElementById('authToggleLink2') || document.getElementById('authToggleLink');
     relink.addEventListener('click', () => authToggleLink.dispatchEvent(new Event('click')));
-    resetAuthMode();
-  });
-
-  authSendOtpBtn.addEventListener('click', async () => {
-    const email = authEmail.value.trim();
-    if (!email) { authError.textContent = 'Email daalo.'; return; }
     authError.textContent = '';
-    authSendOtpBtn.disabled = true;
-    authSendOtpBtn.textContent = 'Bhej rahe hain...';
-    try {
-      const fd = new FormData();
-      fd.append('email', email);
-      const res = await fetch('/api/send-otp', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (!res.ok) { authError.textContent = data.error || 'OTP bhejne mein error aaya.'; return; }
-      otpSent = true;
-      authOtpRow.style.display = 'flex';
-      authOtpNotice.style.display = 'block';
-      authOtpNotice.textContent = '📩 OTP ' + email + ' par bhej diya gaya hai.';
-      authSendOtpBtn.style.display = 'none';
-      authSubmitBtn.style.display = 'block';
-    } finally {
-      authSendOtpBtn.disabled = false;
-      authSendOtpBtn.textContent = 'OTP bhejo';
-    }
   });
-
-  authResendOtpBtn.addEventListener('click', () => authSendOtpBtn.click());
 
   authSubmitBtn.addEventListener('click', async () => {
-    const email = authEmail.value.trim();
+    const username = authUsername.value.trim();
     const password = authPassword.value;
-    if (!email || !password) { authError.textContent = 'Email aur password dono bharo.'; return; }
-
-    if (isSignup) {
-      const otp = authOtp.value.trim();
-      if (!otpSent) { authError.textContent = 'Pehle "OTP bhejo" dabao.'; return; }
-      if (!otp) { authError.textContent = 'OTP bharo.'; return; }
-      const fd = new FormData();
-      fd.append('email', email);
-      fd.append('otp', otp);
-      fd.append('password', password);
-      const res = await fetch('/api/signup', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (!res.ok) { authError.textContent = data.error || 'Kuch galat ho gaya.'; return; }
-      closeAuth();
-      await enterLoggedInMode(data.email);
-    } else {
-      const fd = new FormData();
-      fd.append('email', email);
-      fd.append('password', password);
-      const res = await fetch('/api/login', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (!res.ok) { authError.textContent = data.error || 'Kuch galat ho gaya.'; return; }
-      closeAuth();
-      await enterLoggedInMode(data.email);
-    }
+    if (!username || !password) { authError.textContent = 'Please fill in both username and password.'; return; }
+    const fd = new FormData();
+    fd.append('username', username);
+    fd.append('password', password);
+    const res = await fetch(isSignup ? '/api/signup' : '/api/login', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) { authError.textContent = data.error || 'Something went wrong.'; return; }
+    closeAuth();
+    await enterLoggedInMode(data.username);
   });
 
   themeBtn.addEventListener('click', () => applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark'));
@@ -1079,7 +1008,7 @@ function initApp() {
     micBtn.addEventListener('click', () => { if (recognizing) { recognition.stop(); return; } recognition.start(); });
   } else {
     micBtn.disabled = true;
-    micBtn.title = 'Yeh browser voice input support nahi karta (Chrome try karo)';
+    micBtn.title = 'This browser does not support voice input (try Chrome)';
   }
 
   // typed phrase animation (app hero)
@@ -1114,23 +1043,7 @@ function setMode(newMode) {
   codeModeBtn.classList.toggle('active', activeMode === 'code');
 }
 
-function openAuth() {
-  authOverlay.classList.add('open');
-  authError.textContent = '';
-  isSignup = false;
-  otpSent = false;
-  authTitle.textContent = 'Log in';
-  authSubmitBtn.textContent = 'Log in';
-  authToggle.innerHTML = 'Account nahi hai? <a id="authToggleLink">Sign up karo</a>';
-  document.getElementById('authToggleLink').addEventListener('click', () => authToggleLink.dispatchEvent(new Event('click')));
-  authOtpRow.style.display = 'none';
-  authOtp.value = '';
-  authOtpNotice.style.display = 'none';
-  authEmail.value = '';
-  authPassword.value = '';
-  authSendOtpBtn.style.display = 'none';
-  authSubmitBtn.style.display = 'block';
-}
+function openAuth() { authOverlay.classList.add('open'); authError.textContent = ''; }
 function closeAuth() { authOverlay.classList.remove('open'); }
 
 async function doLogout() {
@@ -1142,15 +1055,15 @@ async function checkAuth() {
   const res = await fetch('/api/me');
   if (res.ok) {
     const data = await res.json();
-    await enterLoggedInMode(data.email);
+    await enterLoggedInMode(data.username);
   } else {
     enterGuestMode();
   }
 }
 
-async function enterLoggedInMode(email) {
+async function enterLoggedInMode(username) {
   isLoggedIn = true;
-  userLabel.textContent = '👤 ' + email;
+  userLabel.textContent = '👤 ' + username;
   searchInput.style.display = 'block';
   chatListEl.style.display = 'flex';
   guestNotice.style.display = 'none';
@@ -1286,7 +1199,7 @@ function addBubble(text, isUser) {
 
   const avatar = document.createElement('div');
   avatar.className = 'demoAvatar ' + (isUser ? 'user' : 'ai');
-  avatar.textContent = isUser ? 'U' : 'J';
+  avatar.textContent = isUser ? 'U' : 'W';
 
   const b = document.createElement('div');
   b.className = 'bubble ' + (isUser ? 'user' : 'ai');
