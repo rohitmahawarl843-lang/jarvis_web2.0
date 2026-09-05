@@ -92,6 +92,10 @@
 
   /* Hero */
   #landHero { text-align: center; padding: 96px 24px 60px 24px; }
+  .landWelcome {
+    font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 18px 0;
+  }
   .heroBadge {
     display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; border-radius: 20px;
     font-size: 12px; font-weight: 500; font-family: var(--font-mono);
@@ -186,6 +190,14 @@
 
   /* Use cases */
   .useGrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .aboutBox { max-width: 720px; margin: 0 auto; }
+  .aboutBox > p { color: var(--muted); font-size: 15.5px; line-height: 1.7; margin: 0 0 24px 0; text-align: center; }
+  .aboutList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+  .aboutList li {
+    padding: 16px 18px; border-radius: 14px; background: var(--card); border: 1px solid var(--border);
+    font-size: 14.5px; line-height: 1.6; color: var(--text);
+  }
+  .aboutList li strong { color: var(--accent); }
   .useCard { padding: 20px 14px; border-radius: 16px; text-align: center; background: var(--card); border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; }
   .useCard:hover { border-color: rgba(124,110,230,0.3); background: rgba(124,110,230,0.06); }
   .useCard .icon { font-size: 24px; margin-bottom: 8px; }
@@ -215,6 +227,7 @@
   .footCol a { font-size: 12.5px; color: var(--muted); }
   .footCol a:hover { color: var(--text); }
   .footBottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 22px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+  .footCredit { font-family: var(--font-mono); }
   .footSocial { display: flex; gap: 16px; }
 
   @media (max-width: 900px) {
@@ -460,24 +473,25 @@
 
   <!-- HERO -->
   <section id="landHero">
-    <div class="heroBadge"><span class="dot"></span>World AI 2.0 — ab web search aur code run kar sakta hai</div>
-    <h1>Poocho World AI se <span class="grad cursorBlink" id="landTyped">kuch bhi.</span></h1>
+    <p class="landWelcome">Welcome to World AI Assistant</p>
+    <div class="heroBadge"><span class="dot"></span>World AI 2.0 — now with web search and code execution</div>
+    <h1>Ask World AI <span class="grad cursorBlink" id="landTyped">anything.</span></h1>
     <p class="sub">Your own AI assistant — chat naturally, run web searches, write or execute code, and read your files. All in one place.</p>
 
     <div class="heroInputWrap">
       <div class="heroInputOuter">
         <div class="heroInputInner">
-          <input id="landHeroInput" type="text" placeholder="World AI se kuch bhi poocho…" autocomplete="off" />
+          <input id="landHeroInput" type="text" placeholder="Ask World AI anything…" autocomplete="off" />
           <button class="heroSendBtn" id="landHeroSend">➤</button>
         </div>
       </div>
     </div>
 
     <div class="heroChips">
-      <button class="heroChip" data-fill="Ek Python web scraper likh do">Python web scraper likho</button>
+      <button class="heroChip" data-fill="Write a Python web scraper">Write a web scraper</button>
       <button class="heroChip" data-fill="Review my business plan">Business plan review</button>
-      <button class="heroChip" data-fill="Is code mein bug dhundo">Code mein bug dhundo</button>
-      <button class="heroChip" data-fill="Aaj ki taazi khabrein batao">Aaj ki khabrein</button>
+      <button class="heroChip" data-fill="Find a bug in my code">Find a bug in my code</button>
+      <button class="heroChip" data-fill="What's in the news today?">Today's news</button>
       <button class="heroChip" data-fill="Draft an email for me">Draft an email</button>
     </div>
 
@@ -630,14 +644,30 @@ for item in items:
 
   <!-- USE CASES -->
   <section class="landSection landSectionNarrow" id="landUsecases">
-    <div class="sectionHead"><h2>Sabke kaam ka</h2></div>
+    <div class="sectionHead"><h2>Built for everyone</h2></div>
     <div class="useGrid">
       <div class="useCard"><div class="icon">👨‍💻</div><div class="label">Developers</div><div class="desc">Code, debug, architecture</div></div>
       <div class="useCard"><div class="icon">✍️</div><div class="label">Writers</div><div class="desc">Drafts, editing</div></div>
       <div class="useCard"><div class="icon">📊</div><div class="label">Analysts</div><div class="desc">Data, reports</div></div>
-      <div class="useCard"><div class="icon">🎓</div><div class="label">Students</div><div class="desc">Padhai, concepts</div></div>
+      <div class="useCard"><div class="icon">🎓</div><div class="label">Students</div><div class="desc">Studying, concepts</div></div>
       <div class="useCard"><div class="icon">💼</div><div class="label">Business</div><div class="desc">Plans, emails</div></div>
       <div class="useCard"><div class="icon">🎨</div><div class="label">Creators</div><div class="desc">Ideas, content</div></div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="landSection landSectionNarrow" id="landAbout">
+    <div class="sectionHead"><h2>About World AI</h2></div>
+    <div class="aboutBox">
+      <p>World AI is an all-in-one AI assistant built to help you think, write, code, and research faster — all from a single chat window. It understands the language you speak in and replies the same way, so conversations always feel natural.</p>
+      <ul class="aboutList">
+        <li><strong>Live Web Search</strong> — Get current news, prices, and real-time information pulled straight from the internet.</li>
+        <li><strong>Code Execution</strong> — Write code in 40+ languages and actually run it to verify the output, not just see it printed.</li>
+        <li><strong>File Analysis</strong> — Upload PDFs, Word docs, spreadsheets, or images and get a clear summary or analysis of the content.</li>
+        <li><strong>Voice Input</strong> — Speak instead of typing when it's more convenient.</li>
+        <li><strong>Chat History</strong> — Every conversation is saved to your account so you can pick up right where you left off.</li>
+        <li><strong>Multi-language replies</strong> — Talk in Hindi, English, Hinglish, or any other language — World AI matches you.</li>
+      </ul>
     </div>
   </section>
 
@@ -659,11 +689,11 @@ for item in items:
       <div class="footCols">
         <div class="footBrand">
           <div class="landBrand"><div class="landLogo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M5 7.5c3 1.5 11 1.5 14 0"/><path d="M5 16.5c3-1.5 11-1.5 14 0"/></svg></div><span class="name">World AI</span></div>
-          <p>Aapka apna Hinglish AI assistant. Web search, code, aur files — sab ek jagah.</p>
+          <p>Your own AI assistant. Web search, code, and files — all in one place.</p>
         </div>
         <div class="footCol">
           <div class="footColTitle">PRODUCT</div>
-          <ul><li><a href="#" data-scroll="landFeatures">Features</a></li><li><a href="#" data-scroll="landModes">Modes</a></li><li><a href="#" data-scroll="landUsecases">Use cases</a></li></ul>
+          <ul><li><a href="#" data-scroll="landFeatures">Features</a></li><li><a href="#" data-scroll="landModes">Modes</a></li><li><a href="#" data-scroll="landUsecases">Use cases</a></li><li><a href="#" data-scroll="landAbout">About</a></li></ul>
         </div>
         <div class="footCol">
           <div class="footColTitle">RESOURCES</div>
@@ -675,7 +705,7 @@ for item in items:
         </div>
       </div>
       <div class="footBottom">
-        <span>© 2026 World AI</span>
+        <span>© 2026 World AI · <span class="footCredit">Created by Sachin Saini</span></span>
         <div class="footSocial"><a href="#">GitHub</a><a href="#">Twitter</a></div>
       </div>
     </div>
@@ -730,14 +760,14 @@ for item in items:
     </div>
 
     <div id="hero">
-      <div id="heroTag"><span class="dot"></span>World AI 2.0 — ab web search aur code run kar sakta hai</div>
-      <h1>Poocho mujhse <span class="grad cursorBlink" id="typedPhrase">kuch bhi.</span></h1>
+      <div id="heroTag"><span class="dot"></span>World AI 2.0 — now with web search and code execution</div>
+      <h1>Ask me <span class="grad cursorBlink" id="typedPhrase">anything.</span></h1>
       <p id="heroSub" style="display:none;">Guest mode — is chat ka data save nahi hoga.</p>
       <div id="heroChipsApp">
-        <button class="heroChip" data-fill="Ek Python web scraper likh do">Python web scraper likho</button>
-        <button class="heroChip" data-fill="Aaj ki taazi khabrein batao">Aaj ki khabrein</button>
+        <button class="heroChip" data-fill="Write a Python web scraper">Write a web scraper</button>
+        <button class="heroChip" data-fill="What's in the news today?">Today's news</button>
         <button class="heroChip" data-fill="Review my business plan">Business plan review</button>
-        <button class="heroChip" data-fill="Is code mein bug dhundo">Code mein bug dhundo</button>
+        <button class="heroChip" data-fill="Find a bug in my code">Find a bug in my code</button>
         <button class="heroChip" data-fill="Draft an email for me">Draft an email</button>
       </div>
     </div>
@@ -829,7 +859,7 @@ document.getElementById('navToggleBtn').addEventListener('click', () => {
 
 // Landing hero typed animation
 const landTypedEl = document.getElementById('landTyped');
-const landPhrases = ['kuch bhi.', 'code.', 'research.', 'ideas.', 'kaam.'];
+const landPhrases = ['anything.', 'code.', 'research.', 'ideas.', 'your work.'];
 let landPhraseIdx = 0;
 function typeLandPhrase() {
   const phrase = landPhrases[landPhraseIdx];
@@ -1013,7 +1043,7 @@ function initApp() {
 
   // typed phrase animation (app hero)
   const typedPhraseEl = document.getElementById('typedPhrase');
-  const heroPhrases = ['kuch bhi.', 'code.', 'research.', 'ideas.', 'kaam.'];
+  const heroPhrases = ['anything.', 'code.', 'research.', 'ideas.', 'your work.'];
   let phraseIdx = 0;
   function typePhrase() {
     const phrase = heroPhrases[phraseIdx];
