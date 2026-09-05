@@ -1,5 +1,5 @@
 """
-Jarvis AI — Web Version
+World AI — Web Version
 Login optional (guests get no persistence). Supports file analysis,
 optional Web Search tool, optional Code Execution tool, and
 MULTIPLE Gemini API keys with automatic fallback on quota errors.
@@ -12,13 +12,26 @@ import uuid
 import random
 import secrets
 import hashlib
-import smtplib
+import socket
 import mimetypes
 import itertools
 import threading
-from email.mime.text import MIMEText
 from datetime import datetime, timezone, timedelta
 from typing import List
+
+# ---------------- Force IPv4 for ALL outbound connections ----------------
+# Railway (aur kai dusre hosts) ka network kabhi IPv6 route try karta hai jo
+# kaam nahi karta, jisse Gemini/Mongo/koi bhi external call 30-60s tak slow
+# ho jaata hai jab tak IPv4 par fallback na ho. Yeh globally IPv4 force
+# karke woh delay hamesha ke liye khatam kar deta hai.
+_orig_getaddrinfo = socket.getaddrinfo
+
+
+def _ipv4_only_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+    return _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+
+
+socket.getaddrinfo = _ipv4_only_getaddrinfo
 
 from fastapi import FastAPI, Request, Response, Form, File, UploadFile
 from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
@@ -57,41 +70,6 @@ users_col = mongo_db["users"]
 sessions_col = mongo_db["sessions"]
 chats_col = mongo_db["chats"]
 messages_col = mongo_db["messages"]
-otps_col = mongo_db["otps"]
-
-# ---------------- Email (Gmail SMTP) for OTP ----------------
-GMAIL_USER = os.environ.get("GMAIL_USER", "").strip()
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
-EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-
-
-import certifi
-import socket
-
-_orig_getaddrinfo = socket.getaddrinfo
-
-
-def _ipv4_only_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
-    # Railway jaise kai hosts par IPv6 route nahi hota, isliye SMTP ke liye
-    # IPv4 par force karte hain taaki "Network is unreachable" na aaye.
-    return _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
-
-
-def send_otp_email(to_email: str, otp: str):
-    if not GMAIL_USER or not GMAIL_APP_PASSWORD:
-        raise RuntimeError("GMAIL_USER / GMAIL_APP_PASSWORD env variables set nahi hain.")
-    msg = MIMEText(f"Aapka World AI signup OTP hai: {otp}\n\nYeh OTP 5 minute ke liye valid hai.")
-    msg["Subject"] = "World AI - Aapka OTP code"
-    msg["From"] = GMAIL_USER
-    msg["To"] = to_email
-
-    socket.getaddrinfo = _ipv4_only_getaddrinfo
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
-            server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-            server.sendmail(GMAIL_USER, [to_email], msg.as_string())
-    finally:
-        socket.getaddrinfo = _orig_getaddrinfo
 
 # ---------------- Multiple API keys support (multi-provider) ----------------
 # Gemini: GEMINI_API_KEYS="key1,key2,key3" (comma separated) on Railway.
@@ -139,28 +117,27 @@ MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-5-mini")
 DAILY_MESSAGE_LIMIT = int(os.environ.get("DAILY_MESSAGE_LIMIT", "0"))
 
-SYSTEM_PROMPT = """You are Jarvis, a friendly AI assistant.
-You speak in Hinglish naturally. Be helpful and concise.
-Agar user koi file (image, video, PDF, spreadsheet, document) attach kare,
-uska data dhyan se dekho/padho aur uske sawaal ka sahi jawab do ya data ka
-summary/analysis do.
-Agar Web Search tool available hai, current/real-time info (news, weather,
-prices) ke liye zaroor use karo. Agar Code Execution tool available hai,
-code ko actually chala kar result verify karo, sirf likh kar mat do."""
+SYSTEM_PROMPT = """You are World AI, a friendly and helpful AI assistant.
+Always reply in the SAME language the user writes in — if they write in Hindi, reply in Hindi;
+if English, reply in English; if Hinglish (mixed Hindi-English), reply in Hinglish; and so on
+for any other language. Match their language naturally, don't force any one language.
+Be helpful and concise.
+If the user attaches a file (image, video, PDF, spreadsheet, document), carefully look at/read
+its content and answer their question properly or give a summary/analysis of the data.
+If the Web Search tool is available, use it for current/real-time info (news, weather, prices).
+If the Code Execution tool is available, actually run the code to verify the result — don't just
+write it without running it."""
 
 guest_sessions = {}
 
 # ---------------- Database (MongoDB) ----------------
 
 def init_db():
-    users_col.create_index("email", unique=True, sparse=True)
+    users_col.create_index("username", unique=True)
     sessions_col.create_index("token", unique=True)
     chats_col.create_index("chat_id", unique=True)
     chats_col.create_index("user_id")
     messages_col.create_index("chat_id")
-    # OTP entries auto-delete themselves 5 minute baad (TTL index)
-    otps_col.create_index("created_at", expireAfterSeconds=300)
-    otps_col.create_index("email")
 
 init_db()
 
@@ -191,7 +168,7 @@ def get_current_user(request: Request):
     user = users_col.find_one({"_id": session["user_id"]})
     if not user:
         return None
-    return {"id": user["_id"], "email": user["email"]}
+    return {"id": user["_id"], "username": user["username"]}
 
 
 def unauth():
@@ -355,72 +332,43 @@ def health():
 
 # ---------------- Auth routes ----------------
 
-@app.post("/api/send-otp")
-async def send_otp(email: str = Form(...)):
-    email = email.strip().lower()
-    if not EMAIL_RE.match(email):
-        return JSONResponse({"error": "Sahi email address daalo."}, status_code=400)
-
-    if users_col.find_one({"email": email}):
-        return JSONResponse({"error": "Is email se account pehle se bana hua hai. Log in karo."}, status_code=400)
-
-    otp = f"{random.randint(0, 999999):06d}"
-    otps_col.delete_many({"email": email})  # purana OTP hata do agar tha
-    otps_col.insert_one({"email": email, "otp": otp, "created_at": now_utc()})
-
-    try:
-        send_otp_email(email, otp)
-    except Exception as e:
-        return JSONResponse({"error": f"OTP email bhejne mein error aaya: {e}"}, status_code=500)
-
-    return {"status": "sent"}
-
-
 @app.post("/api/signup")
-async def signup(response: Response, email: str = Form(...), otp: str = Form(...), password: str = Form(...)):
-    email = email.strip().lower()
-    if not EMAIL_RE.match(email):
-        return JSONResponse({"error": "Sahi email address daalo."}, status_code=400)
-    if len(password) < 4:
-        return JSONResponse({"error": "Password kam se kam 4 characters ka ho."}, status_code=400)
-
-    otp_row = otps_col.find_one({"email": email})
-    if not otp_row or otp_row["otp"] != otp.strip():
-        return JSONResponse({"error": "OTP galat ya expire ho chuka hai. Dobara bhejo."}, status_code=400)
+async def signup(response: Response, username: str = Form(...), password: str = Form(...)):
+    username = username.strip()
+    if len(username) < 3 or len(password) < 4:
+        return JSONResponse({"error": "Username must be at least 3 characters and password at least 4 characters."}, status_code=400)
 
     salt, pwd_hash = hash_password(password)
     try:
         result = users_col.insert_one({
-            "email": email,
+            "username": username,
             "salt": salt,
             "password_hash": pwd_hash,
             "created_at": now_utc(),
         })
         user_id = result.inserted_id
     except DuplicateKeyError:
-        return JSONResponse({"error": "Is email se account pehle se bana hua hai."}, status_code=400)
-
-    otps_col.delete_many({"email": email})
+        return JSONResponse({"error": "This username is already taken."}, status_code=400)
 
     token = secrets.token_urlsafe(32)
     sessions_col.insert_one({"token": token, "user_id": user_id, "created_at": now_utc()})
 
     response.set_cookie("session_token", token, httponly=True, max_age=60 * 60 * 24 * 30, samesite="lax")
-    return {"email": email}
+    return {"username": username}
 
 
 @app.post("/api/login")
-async def login(response: Response, email: str = Form(...), password: str = Form(...)):
-    row = users_col.find_one({"email": email.strip().lower()})
+async def login(response: Response, username: str = Form(...), password: str = Form(...)):
+    row = users_col.find_one({"username": username.strip()})
 
     if not row or not verify_password(password, row["salt"], row["password_hash"]):
-        return JSONResponse({"error": "Email ya password galat hai."}, status_code=400)
+        return JSONResponse({"error": "Incorrect username or password."}, status_code=400)
 
     token = secrets.token_urlsafe(32)
     sessions_col.insert_one({"token": token, "user_id": row["_id"], "created_at": now_utc()})
 
     response.set_cookie("session_token", token, httponly=True, max_age=60 * 60 * 24 * 30, samesite="lax")
-    return {"email": row["email"]}
+    return {"username": row["username"]}
 
 
 @app.post("/api/logout")
@@ -437,7 +385,7 @@ def me(request: Request):
     user = get_current_user(request)
     if not user:
         return unauth()
-    return {"email": user["email"]}
+    return {"username": user["username"]}
 
 
 # ---------------- Chat CRUD (logged-in users only) ----------------
@@ -514,7 +462,7 @@ async def chat(
 
     if not providers:
         def err_stream():
-            yield f"data: {json.dumps({'error': 'Server par koi bhi AI API key (Gemini/OpenAI) set nahi hai.'})}\n\n"
+            yield f"data: {json.dumps({'error': 'No AI API key (Gemini/OpenAI) is configured on the server.'})}\n\n"
         return StreamingResponse(err_stream(), media_type="text/event-stream")
 
     text = (message or "").strip()
@@ -530,7 +478,7 @@ async def chat(
         chat_row = chats_col.find_one({"chat_id": chat_id, "user_id": user["id"]})
         if not chat_row:
             def nf_stream():
-                yield f"data: {json.dumps({'error': 'Chat nahi mila.'})}\n\n"
+                yield f"data: {json.dumps({'error': 'Chat not found.'})}\n\n"
             return StreamingResponse(nf_stream(), media_type="text/event-stream")
 
         if DAILY_MESSAGE_LIMIT > 0:
@@ -543,7 +491,7 @@ async def chat(
             })
             if count >= DAILY_MESSAGE_LIMIT:
                 def limit_stream():
-                    yield f"data: {json.dumps({'error': f'Aaj ka {DAILY_MESSAGE_LIMIT} messages ka limit khatam ho gaya. Kal try karo.'})}\n\n"
+                    yield f"data: {json.dumps({'error': f'You have reached the daily limit of {DAILY_MESSAGE_LIMIT} messages. Please try again tomorrow.'})}\n\n"
                 return StreamingResponse(limit_stream(), media_type="text/event-stream")
 
     file_parts = []
@@ -606,7 +554,7 @@ async def chat(
                 yield f"data: {json.dumps({'previews': previews})}\n\n"
 
             if not usable_providers:
-                yield f"data: {json.dumps({'error': 'Yeh feature (file/search/code) abhi sirf Gemini ke saath kaam karta hai, aur koi Gemini key configured nahi hai.'})}\n\n"
+                yield f"data: {json.dumps({'error': 'This feature (file/search/code) currently only works with Gemini, and no Gemini key is configured.'})}\n\n"
                 return
 
             config_kwargs = dict(
@@ -651,7 +599,7 @@ async def chat(
 
             if last_err:
                 if is_quota_error(last_err):
-                    yield f"data: {json.dumps({'error': 'Sab configured API keys ki quota abhi khatam hai. Thodi der baad try karo.'})}\n\n"
+                    yield f"data: {json.dumps({'error': 'All configured API keys have run out of quota. Please try again later.'})}\n\n"
                 else:
                     yield f"data: {json.dumps({'error': str(last_err)})}\n\n"
                 return
