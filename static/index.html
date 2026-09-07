@@ -418,11 +418,12 @@
   .fileChip img { width: 22px; height: 22px; object-fit: cover; border-radius: 6px; }
   .fileChip button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; }
 
-  #modeRow { display: flex; gap: 8px; margin: 0 15% 8px 15%; }
+  #modeRow { display: flex; gap: 8px; margin: 0 15% 8px 15%; flex-wrap: wrap; justify-content: center; }
   .modeBtn {
     display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 12px;
     border: 1px solid var(--border); background: var(--card); color: var(--muted);
     cursor: pointer; font-size: 12.5px; font-weight: 500; font-family: inherit; transition: all 0.15s;
+    white-space: nowrap;
   }
   .modeBtn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,110,230,0.06); }
   .modeBtn.active { background: linear-gradient(135deg, rgba(124,110,230,0.22), rgba(96,165,250,0.12)); border-color: rgba(124,110,230,0.35); color: var(--text); }
@@ -450,7 +451,8 @@
     #sidebar { position: fixed; z-index: 20; height: 100vh; transform: translateX(-100%); }
     #sidebar.open { transform: translateX(0); }
     #menuToggle { display: block; }
-    #chat, #fileChips, #modeRow { padding-left: 5%; padding-right: 5%; }
+    #chat, #fileChips { padding-left: 5%; padding-right: 5%; }
+    #modeRow { margin: 0 0 8px 0; padding-left: 5%; padding-right: 5%; }
     #inputWrap { padding-left: 5%; padding-right: 5%; }
     #hero h1 { font-size: 32px; }
     .msgRow.ai, .msgRow.user { max-width: 92%; }
