@@ -124,7 +124,7 @@
   .heroInputWrap { max-width: 620px; margin: 0 auto 20px auto; }
   .heroInputOuter { border-radius: 20px; padding: 1.5px; background: linear-gradient(135deg, rgba(124,110,230,0.5), rgba(96,165,250,0.3)); }
   .heroInputInner { border-radius: 18px; background: var(--card); display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 20px; }
-  .heroInputInner input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 15px; font-family: inherit; }
+  .heroInputInner input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 16px; font-family: inherit; }
   .heroSendBtn {
     width: 38px; height: 38px; border-radius: 12px; border: none; flex-shrink: 0; cursor: pointer;
     background: var(--grad); color: white; font-size: 16px; display: flex; align-items: center; justify-content: center;
@@ -275,7 +275,7 @@
   }
   #authBox input {
     padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--panel); color: var(--text); font-size: 14px; outline: none; font-family: var(--font-sans);
+    background: var(--panel); color: var(--text); font-size: 16px; outline: none; font-family: var(--font-sans);
   }
   #authBox input:focus { border-color: var(--accent); }
   #authBox button.primary {
@@ -313,7 +313,7 @@
   #newChatBtn:hover { opacity: 0.9; background: var(--grad); }
   #searchInput {
     width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--card); color: var(--text); font-size: 13px; margin: 4px 0 10px 0; outline: none;
+    background: var(--card); color: var(--text); font-size: 16px; margin: 4px 0 10px 0; outline: none;
     font-family: inherit;
   }
   #chatList { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
@@ -360,12 +360,18 @@
   #backToLandingBtn:hover { color: var(--text); background: var(--hover); }
   #menuToggle { display: none; background: none; border: none; font-size: 18px; color: var(--text); cursor: pointer; flex-shrink: 0; }
   #chatTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-  #status { margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 500; font-family: var(--font-mono); flex-shrink: 0; }
-  #exportBtn {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 10px; color: var(--text);
-    cursor: pointer; font-size: 12px; padding: 7px 14px; font-weight: 600; transition: border-color 0.2s; flex-shrink: 0;
+  #status {
+    margin-left: auto; display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; font-family: var(--font-mono); color: var(--accent);
+    background: rgba(124,110,230,0.10); border: 1px solid rgba(124,110,230,0.22);
+    padding: 5px 12px; border-radius: 20px; flex-shrink: 0;
   }
-  #exportBtn:hover { border-color: var(--accent); }
+  #exportBtn {
+    background: linear-gradient(135deg, rgba(124,110,230,0.14), rgba(96,165,250,0.10));
+    border: 1px solid rgba(124,110,230,0.28); border-radius: 10px; color: var(--accent);
+    cursor: pointer; font-size: 12px; padding: 7px 14px; font-weight: 600; transition: all 0.2s; flex-shrink: 0;
+  }
+  #exportBtn:hover { border-color: var(--accent); background: rgba(124,110,230,0.22); }
   #guestBadge { font-size: 11px; background: var(--panel); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; color: var(--muted); font-weight: 500; font-family: var(--font-mono); flex-shrink: 0; }
 
   #hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px; text-align: center; }
@@ -426,9 +432,10 @@
   #inputWrap { padding: 4px 15% 22px 15%; }
   #inputBarOuter { border-radius: 26px; padding: 1.5px; background: linear-gradient(135deg, rgba(124,110,230,0.5), rgba(79,163,227,0.3)); }
   #inputBar { display: flex; align-items: center; gap: 6px; background: var(--card); border-radius: 25px; padding: 8px 8px 8px 16px; }
-  #msgInput { flex: 1; border: none; background: transparent; color: var(--text); font-size: 15px; outline: none; padding: 8px 0; font-family: inherit; }
+  #msgInput { flex: 1; border: none; background: transparent; color: var(--text); font-size: 16px; outline: none; padding: 8px 0; font-family: inherit; }
   button.roundBtn {
-    background: var(--panel); border: 1px solid var(--border); color: var(--muted);
+    background: linear-gradient(135deg, rgba(124,110,230,0.12), rgba(96,165,250,0.08));
+    border: 1px solid rgba(124,110,230,0.22); color: var(--accent);
     border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 15px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s;
   }
@@ -462,7 +469,7 @@
     #landHero h1 { font-size: 28px; letter-spacing: -0.5px; }
     #landHero > p.sub { font-size: 14.5px; padding: 0 4px; }
     .heroInputInner { padding: 6px 6px 6px 14px; }
-    .heroInputInner input { font-size: 14px; }
+    .heroInputInner input { font-size: 16px; }
     .heroChip { font-size: 11.5px; padding: 7px 12px; }
 
     .landSection { padding: 48px 16px; }
