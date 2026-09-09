@@ -324,8 +324,33 @@
   .chatRow:hover, .chatRow.active { background: var(--hover); }
   .chatRow.active { border-left: 3px solid var(--accent); }
   .chatRow .title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chatRow { position: relative; }
   .chatRow .rowBtn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 3px; display: none; }
   .chatRow:hover .rowBtn { display: inline-block; }
+  .chatRow .pinIcon { font-size: 11px; margin-right: 4px; opacity: 0.7; flex-shrink: 0; }
+
+  .chatMenuBtn {
+    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px;
+    padding: 3px 6px; border-radius: 6px; display: none; line-height: 1; flex-shrink: 0;
+  }
+  .chatRow:hover .chatMenuBtn, .chatMenuBtn.open { display: inline-block; }
+  .chatMenuBtn:hover { background: var(--border); }
+
+  .chatMenuDropdown {
+    position: fixed; z-index: 200; background: #ffffff; border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
+    padding: 6px; min-width: 190px; border: 1px solid rgba(0,0,0,0.06);
+  }
+  body.dark .chatMenuDropdown { background: #26262b; border-color: rgba(255,255,255,0.08); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+  .chatMenuItem {
+    display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 9px;
+    font-size: 13.5px; color: #26262b; cursor: pointer; white-space: nowrap; font-family: var(--font-sans);
+  }
+  body.dark .chatMenuItem { color: #e4e4e8; }
+  .chatMenuItem:hover { background: rgba(0,0,0,0.05); }
+  body.dark .chatMenuItem:hover { background: rgba(255,255,255,0.07); }
+  .chatMenuItem.danger { color: #d64545; }
+  .chatMenuItem .ico { width: 16px; text-align: center; flex-shrink: 0; opacity: 0.85; }
 
   #guestNotice {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -435,12 +460,13 @@
   #inputBar { display: flex; align-items: center; gap: 6px; background: var(--card); border-radius: 25px; padding: 8px 8px 8px 16px; }
   #msgInput { flex: 1; border: none; background: transparent; color: var(--text); font-size: 16px; outline: none; padding: 8px 0; font-family: inherit; }
   button.roundBtn {
-    background: linear-gradient(135deg, rgba(124,110,230,0.12), rgba(96,165,250,0.08));
-    border: 1px solid rgba(124,110,230,0.22); color: var(--accent);
+    background: #ffffff; border: 1px solid rgba(0,0,0,0.06); color: #3c3c43;
     border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 15px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
   }
-  button.roundBtn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,110,230,0.08); }
+  body.dark button.roundBtn { background: #2a2a30; border-color: rgba(255,255,255,0.08); color: #e4e4e8; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  button.roundBtn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
   button.roundBtn.active { background: var(--grad); color: white; border-color: transparent; box-shadow: 0 4px 14px rgba(124,110,230,0.35); }
   #sendBtn { background: var(--grad); color: white; border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; font-size: 16px; flex-shrink: 0; box-shadow: 0 4px 14px rgba(124,110,230,0.35); transition: opacity .15s; }
   #sendBtn:hover { opacity: .9; }
@@ -850,10 +876,10 @@ for item in items:
     <div id="inputWrap">
       <div id="inputBarOuter">
         <div id="inputBar">
-          <button class="roundBtn" id="attachBtn" title="Attach a file">📎</button>
+          <button class="roundBtn" id="attachBtn" title="Attach a file"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
           <input type="file" id="fileInput" hidden multiple accept="image/*,video/*,audio/*,.pdf,.txt,.csv,.xlsx,.xls,.docx" />
           <input id="msgInput" type="text" placeholder="Message World AI..." autocomplete="off" />
-          <button class="roundBtn" id="micBtn" title="Bolke poocho">🎙️</button>
+          <button class="roundBtn" id="micBtn" title="Bolke poocho"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
           <button id="sendBtn" title="Send">➤</button>
         </div>
       </div>
@@ -1211,6 +1237,79 @@ async function loadChats() {
   renderSidebar();
 }
 
+function closeChatMenus() {
+  document.querySelectorAll('.chatMenuDropdown').forEach(el => el.remove());
+  document.querySelectorAll('.chatMenuBtn.open').forEach(el => el.classList.remove('open'));
+}
+document.addEventListener('click', closeChatMenus);
+
+function openChatMenu(btn, c) {
+  closeChatMenus();
+  btn.classList.add('open');
+  const menu = document.createElement('div');
+  menu.className = 'chatMenuDropdown';
+
+  const items = [
+    { icon: '📌', label: c.pinned ? 'Unpin' : 'Pin', action: () => togglePin(c) },
+    { icon: '✏️', label: 'Rename', action: () => renameChatPrompt(c) },
+    { icon: '⬇️', label: 'Download', action: () => downloadChat(c) },
+    { icon: '🗑️', label: 'Delete', danger: true, action: () => deleteChatConfirm(c) },
+  ];
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'chatMenuItem' + (item.danger ? ' danger' : '');
+    row.innerHTML = `<span class="ico">${item.icon}</span><span>${item.label}</span>`;
+    row.addEventListener('click', (e) => { e.stopPropagation(); closeChatMenus(); item.action(); });
+    menu.appendChild(row);
+  });
+
+  document.body.appendChild(menu);
+  const r = btn.getBoundingClientRect();
+  const menuW = menu.offsetWidth, menuH = menu.offsetHeight;
+  let left = r.left, top = r.bottom + 4;
+  if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
+  if (top + menuH > window.innerHeight - 8) top = r.top - menuH - 4;
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
+async function togglePin(c) {
+  const res = await fetch(`/api/chats/${c.id}/pin`, { method: 'POST' });
+  if (res.ok) { const data = await res.json(); c.pinned = data.pinned; await loadChats(); }
+}
+
+function renameChatPrompt(c) {
+  const newTitle = prompt('Naya naam:', c.title);
+  if (!newTitle) return;
+  const fd = new FormData(); fd.append('title', newTitle);
+  fetch(`/api/chats/${c.id}`, { method: 'PUT', body: fd }).then(() => {
+    c.title = newTitle;
+    renderSidebar(searchInput.value);
+    if (c.id === activeChatId) chatTitleEl.textContent = newTitle;
+  });
+}
+
+async function downloadChat(c) {
+  const res = await fetch(`/api/chats/${c.id}/messages`);
+  const msgs = res.ok ? await res.json() : [];
+  const text = msgs.map(m => `${m.role === 'user' ? 'You' : 'World AI'}: ${m.text}`).join('\n\n');
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${c.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function deleteChatConfirm(c) {
+  if (!confirm('Ye chat delete karni hai?')) return;
+  fetch(`/api/chats/${c.id}`, { method: 'DELETE' }).then(() => {
+    chats = chats.filter(x => x.id !== c.id);
+    if (activeChatId === c.id) { activeChatId = null; showHero(); }
+    renderSidebar(searchInput.value);
+  });
+}
+
 function renderSidebar(filter = '') {
   chatListEl.innerHTML = '';
   const f = filter.trim().toLowerCase();
@@ -1219,34 +1318,14 @@ function renderSidebar(filter = '') {
     row.className = 'chatRow' + (c.id === activeChatId ? ' active' : '');
     const title = document.createElement('span');
     title.className = 'title';
-    title.textContent = c.title;
+    title.innerHTML = (c.pinned ? '<span class="pinIcon">📌</span>' : '') + c.title.replace(/</g, '&lt;');
     title.addEventListener('click', () => selectChat(c.id));
 
-    const renameBtn = document.createElement('button');
-    renameBtn.className = 'rowBtn'; renameBtn.textContent = '✏️';
-    renameBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const newTitle = prompt('Naya naam:', c.title);
-      if (!newTitle) return;
-      const fd = new FormData(); fd.append('title', newTitle);
-      await fetch(`/api/chats/${c.id}`, { method: 'PUT', body: fd });
-      c.title = newTitle;
-      renderSidebar(searchInput.value);
-      if (c.id === activeChatId) chatTitleEl.textContent = newTitle;
-    });
+    const menuBtn = document.createElement('button');
+    menuBtn.className = 'chatMenuBtn'; menuBtn.textContent = '⋮';
+    menuBtn.addEventListener('click', (e) => { e.stopPropagation(); openChatMenu(menuBtn, c); });
 
-    const delBtn = document.createElement('button');
-    delBtn.className = 'rowBtn'; delBtn.textContent = '🗑️';
-    delBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      if (!confirm('Ye chat delete karni hai?')) return;
-      await fetch(`/api/chats/${c.id}`, { method: 'DELETE' });
-      chats = chats.filter(x => x.id !== c.id);
-      if (activeChatId === c.id) { activeChatId = null; showHero(); }
-      renderSidebar(searchInput.value);
-    });
-
-    row.appendChild(title); row.appendChild(renameBtn); row.appendChild(delBtn);
+    row.appendChild(title); row.appendChild(menuBtn);
     chatListEl.appendChild(row);
   });
 }
