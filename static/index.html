@@ -1023,6 +1023,7 @@ let activeProjectFilter = null;
 let activeChatId = null;
 let guestChatId = null;
 let attachedFiles = [];
+let chatFilesMap = {};
 let currentController = null;
 let isGenerating = false;
 let activeMode = 'none';
@@ -1531,17 +1532,30 @@ function openChatMenu(btn, c) {
 /* ---- Topbar ⋮ menu (current open chat): View files / Pin / Archive / Delete ---- */
 function openTopChatMenu(btn) {
   closeChatMenus();
-  if (!activeChatId) return;
+  const chatIdForMenu = activeChatId || guestChatId;
   btn.classList.add('open');
-  const c = chats.find(x => x.id === activeChatId) || { id: activeChatId, pinned: false };
   const menu = document.createElement('div');
   menu.className = 'chatMenuDropdown';
 
+  if (!chatIdForMenu) {
+    const empty = document.createElement('div');
+    empty.className = 'chatMenuItem';
+    empty.style.color = 'var(--muted)';
+    empty.textContent = 'Pehle ek message bhejo, phir yahan options aayenge.';
+    menu.appendChild(empty);
+    document.body.appendChild(menu);
+    positionMenuFromButton(menu, btn);
+    return;
+  }
+
+  const c = chats.find(x => x.id === chatIdForMenu) || { id: chatIdForMenu, pinned: false };
+  const needsLogin = !isLoggedIn;
+
   const items = [
-    { icon: '🗂️', label: 'View files in chat', action: () => showChatFilesMenu(btn) },
-    { icon: '📌', label: c.pinned ? 'Unpin chat' : 'Pin chat', action: () => togglePin(c) },
-    { icon: '📦', label: 'Archive', action: () => archiveChatConfirm(c) },
-    { icon: '🗑️', label: 'Delete', danger: true, action: () => deleteChatConfirm(c) },
+    { icon: '🗂️', label: 'View files in chat', action: () => showChatFilesMenu(btn, chatIdForMenu) },
+    { icon: '📌', label: c.pinned ? 'Unpin chat' : 'Pin chat', action: () => needsLogin ? alertLoginNeeded() : togglePin(c) },
+    { icon: '📦', label: 'Archive', action: () => needsLogin ? alertLoginNeeded() : archiveChatConfirm(c) },
+    { icon: '🗑️', label: 'Delete', danger: true, action: () => needsLogin ? alertLoginNeeded() : deleteChatConfirm(c) },
   ];
   items.forEach(item => {
     const row = document.createElement('div');
@@ -1559,6 +1573,10 @@ function openTopChatMenu(btn) {
   positionMenuFromButton(menu, btn);
 }
 
+function alertLoginNeeded() {
+  alert('Ye feature sirf logged-in users ke liye available hai. Pehle login/sign up karo.');
+}
+
 function positionMenuFromButton(menu, btn) {
   const r = btn.getBoundingClientRect();
   const menuW = menu.offsetWidth, menuH = menu.offsetHeight;
@@ -1570,7 +1588,7 @@ function positionMenuFromButton(menu, btn) {
   menu.style.top = top + 'px';
 }
 
-async function showChatFilesMenu(btn) {
+async function showChatFilesMenu(btn, chatIdForMenu) {
   const menu = document.createElement('div');
   menu.className = 'chatMenuDropdown';
   menu.style.minWidth = '220px';
@@ -1582,14 +1600,19 @@ async function showChatFilesMenu(btn) {
   document.body.appendChild(menu);
   positionMenuFromButton(menu, btn);
 
-  let files = [];
-  try {
-    const res = await fetch(`/api/chats/${activeChatId}/messages`);
-    if (res.ok) {
-      const msgs = await res.json();
-      msgs.forEach(m => (m.files || []).forEach(fn => files.push(fn)));
-    }
-  } catch (e) { /* ignore */ }
+  // Logged-in: server se poora history mil jaata hai. Guest: sirf isi session mein
+  // is browser tab se bheji gayi files (server par guest history persist nahi hoti).
+  let files = (chatFilesMap[chatIdForMenu] || []).slice();
+  if (isLoggedIn) {
+    try {
+      const res = await fetch(`/api/chats/${chatIdForMenu}/messages`);
+      if (res.ok) {
+        const msgs = await res.json();
+        files = [];
+        msgs.forEach(m => (m.files || []).forEach(fn => files.push(fn)));
+      }
+    } catch (e) { /* ignore, fall back to client-side list */ }
+  }
 
   menu.innerHTML = '';
   if (!files.length) {
@@ -1914,6 +1937,9 @@ async function sendMessage(text) {
   renderFileChips();
 
   const chatId = await ensureActiveChat();
+  if (filesToSend.length) {
+    chatFilesMap[chatId] = (chatFilesMap[chatId] || []).concat(filesToSend.map(f => f.name));
+  }
   showChatView();
   addBubble(displayText, true);
 
