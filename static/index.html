@@ -408,6 +408,11 @@
     cursor: pointer; font-size: 12px; padding: 7px 14px; font-weight: 600; transition: all 0.2s; flex-shrink: 0;
   }
   #exportBtn:hover { border-color: var(--accent); background: rgba(124,110,230,0.22); }
+  #topMenuBtn {
+    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 19px;
+    padding: 5px 9px; border-radius: 8px; line-height: 1; flex-shrink: 0; transition: all 0.15s;
+  }
+  #topMenuBtn:hover, #topMenuBtn.open { background: var(--hover); color: var(--text); }
   #guestBadge { font-size: 11px; background: var(--panel); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; color: var(--muted); font-weight: 500; font-family: var(--font-mono); flex-shrink: 0; }
 
   #hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px; text-align: center; }
@@ -535,11 +540,13 @@
 
     /* Chat app */
     #topbar { padding: 10px 14px; gap: 6px; }
-    #chatTitle { font-size: 13px; max-width: 90px; }
-    #status { display: none; }
+    #chatTitle { font-size: 13px; max-width: 70px; }
+    /* Mobile phone ke status bar jaisa — net speed hamesha dikhega, sirf compact */
+    #status { font-size: 10px; padding: 4px 8px; max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     #guestBadge { font-size: 10px; padding: 2px 8px; }
     #exportBtn { font-size: 0; padding: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
     #exportBtn::before { content: "⬇️"; font-size: 14px; }
+    #topMenuBtn { font-size: 17px; padding: 6px 7px; }
     #hero h1 { font-size: 26px; }
     #heroTag { font-size: 11px; padding: 6px 12px; }
     #inputBar { padding: 6px 6px 6px 12px; }
@@ -864,6 +871,7 @@ for item in items:
       <span id="guestBadge" style="display:none;">Guest — not saved</span>
       <span id="status">🟢 Ready</span>
       <button id="exportBtn">⬇️ Export</button>
+      <button id="topMenuBtn" title="More options">⋮</button>
     </div>
 
     <div id="hero">
@@ -1003,7 +1011,7 @@ document.querySelectorAll('#demoTabBar .tabBtn').forEach(btn => {
 let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError, authSubmitBtn,
     authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
     sidebarEl, chatListEl, projectChipsEl, searchInput, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle,
-    chatTitleEl, exportBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
+    chatTitleEl, exportBtn, topMenuBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
     attachBtn, fileInput, searchModeBtn, codeModeBtn;
 
 let isSignup = false;
@@ -1018,6 +1026,7 @@ let attachedFiles = [];
 let currentController = null;
 let isGenerating = false;
 let activeMode = 'none';
+let recognizing = false;
 
 function initApp() {
   authOverlay = document.getElementById('authOverlay');
@@ -1046,6 +1055,7 @@ function initApp() {
   menuToggle = document.getElementById('menuToggle');
   chatTitleEl = document.getElementById('chatTitle');
   exportBtn = document.getElementById('exportBtn');
+  topMenuBtn = document.getElementById('topMenuBtn');
 
   heroEl = document.getElementById('hero');
   chatEl = document.getElementById('chat');
@@ -1099,6 +1109,8 @@ function initApp() {
   ttsBtn.addEventListener('click', () => applyTts(localStorage.getItem('jarvis_tts') === 'on' ? 'off' : 'on'));
   applyTts(localStorage.getItem('jarvis_tts') || 'on');
 
+  initNetSpeed();
+
   menuToggle.addEventListener('click', () => sidebarEl.classList.toggle('open'));
   searchInput.addEventListener('input', () => renderSidebar(searchInput.value));
 
@@ -1136,15 +1148,19 @@ function initApp() {
     URL.revokeObjectURL(url);
   });
 
+  topMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openTopChatMenu(topMenuBtn);
+  });
+
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SpeechRecognition) {
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = 'hi-IN';
-    let recognizing = false;
     recognition.onstart = () => { recognizing = true; micBtn.classList.add('active'); statusEl.textContent = '🎙️ Sun raha hoon...'; };
-    recognition.onend = () => { recognizing = false; micBtn.classList.remove('active'); statusEl.textContent = '🟢 Ready'; };
+    recognition.onend = () => { recognizing = false; micBtn.classList.remove('active'); setIdleStatus(); };
     recognition.onresult = (event) => sendMessage(event.results[0][0].transcript);
     micBtn.addEventListener('click', () => { if (recognizing) { recognition.stop(); return; } recognition.start(); });
   } else {
@@ -1230,7 +1246,7 @@ function openAttachMenu() {
 async function captureScreenshot() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
     statusEl.textContent = '⚠️ Screenshot not supported on this device';
-    setTimeout(() => { statusEl.textContent = '🟢 Ready'; }, 3000);
+    setTimeout(() => { setIdleStatus(); }, 3000);
     return;
   }
   try {
@@ -1403,6 +1419,73 @@ async function loadSkills() {
   skills = res.ok ? await res.json() : [];
 }
 
+/* ---- Net speed indicator (topbar "Ready" slot) — mobile status-bar style ---- */
+let netSpeedMbps = null;
+let netEffectiveType = null;
+
+function getConnectionInfo() {
+  return navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
+}
+
+function formatNetStatus() {
+  if (netSpeedMbps == null) return '📶 --';
+  let icon = '📶';
+  if (netSpeedMbps < 0.5) icon = '🐢';
+  else if (netSpeedMbps < 2) icon = '📶';
+  else icon = '📶';
+  const typeLabel = netEffectiveType ? netEffectiveType.toUpperCase() + ' · ' : '';
+  const speedLabel = netSpeedMbps >= 10 ? Math.round(netSpeedMbps) : netSpeedMbps.toFixed(1);
+  return `${icon} ${typeLabel}${speedLabel} Mbps`;
+}
+
+// Idle state ab "🟢 Ready" ki jagah net speed dikhata hai, jaise mobile ke status bar mein hota hai.
+function setIdleStatus() {
+  if (statusEl) statusEl.textContent = formatNetStatus();
+}
+
+function readConnectionApiSpeed() {
+  const conn = getConnectionInfo();
+  if (conn && typeof conn.downlink === 'number') {
+    netSpeedMbps = conn.downlink;
+    netEffectiveType = conn.effectiveType || '';
+    return true;
+  }
+  return false;
+}
+
+// Browsers jo Network Information API support nahi karte (Safari/Firefox), unke liye
+// halka sa ping-test karke latency se speed estimate karte hain.
+async function pingNetSpeedFallback() {
+  if (readConnectionApiSpeed()) return;
+  try {
+    const start = performance.now();
+    await fetch('/health', { cache: 'no-store' });
+    const ms = performance.now() - start;
+    if (ms < 150) { netSpeedMbps = 20; netEffectiveType = '4g'; }
+    else if (ms < 400) { netSpeedMbps = 5; netEffectiveType = '3g'; }
+    else if (ms < 900) { netSpeedMbps = 1.5; netEffectiveType = '2g'; }
+    else { netSpeedMbps = 0.3; netEffectiveType = 'slow-2g'; }
+  } catch (e) {
+    netSpeedMbps = null;
+    netEffectiveType = null;
+  }
+}
+
+async function refreshNetSpeed() {
+  await pingNetSpeedFallback();
+  // Sirf idle state mein hi update karo, "Soch raha hoon..." jaise messages ko override na karo.
+  if (!isGenerating && !recognizing) setIdleStatus();
+}
+
+function initNetSpeed() {
+  const conn = getConnectionInfo();
+  if (conn && conn.addEventListener) {
+    conn.addEventListener('change', () => { readConnectionApiSpeed(); if (!isGenerating && !recognizing) setIdleStatus(); });
+  }
+  refreshNetSpeed();
+  setInterval(refreshNetSpeed, 15000);
+}
+
 function closeChatMenus() {
   document.querySelectorAll('.chatMenuDropdown').forEach(el => el.remove());
   document.querySelectorAll('.chatMenuBtn.open').forEach(el => el.classList.remove('open'));
@@ -1443,6 +1526,96 @@ function openChatMenu(btn, c) {
   if (top + menuH > window.innerHeight - 8) top = r.top - menuH - 4;
   menu.style.left = left + 'px';
   menu.style.top = top + 'px';
+}
+
+/* ---- Topbar ⋮ menu (current open chat): View files / Pin / Archive / Delete ---- */
+function openTopChatMenu(btn) {
+  closeChatMenus();
+  if (!activeChatId) return;
+  btn.classList.add('open');
+  const c = chats.find(x => x.id === activeChatId) || { id: activeChatId, pinned: false };
+  const menu = document.createElement('div');
+  menu.className = 'chatMenuDropdown';
+
+  const items = [
+    { icon: '🗂️', label: 'View files in chat', action: () => showChatFilesMenu(btn) },
+    { icon: '📌', label: c.pinned ? 'Unpin chat' : 'Pin chat', action: () => togglePin(c) },
+    { icon: '📦', label: 'Archive', action: () => archiveChatConfirm(c) },
+    { icon: '🗑️', label: 'Delete', danger: true, action: () => deleteChatConfirm(c) },
+  ];
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'chatMenuItem' + (item.danger ? ' danger' : '');
+    row.innerHTML = `<span class="ico">${item.icon}</span><span>${item.label}</span>`;
+    row.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeChatMenus();
+      item.action();
+    });
+    menu.appendChild(row);
+  });
+
+  document.body.appendChild(menu);
+  positionMenuFromButton(menu, btn);
+}
+
+function positionMenuFromButton(menu, btn) {
+  const r = btn.getBoundingClientRect();
+  const menuW = menu.offsetWidth, menuH = menu.offsetHeight;
+  let left = r.right - menuW, top = r.bottom + 4;
+  if (left < 8) left = 8;
+  if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
+  if (top + menuH > window.innerHeight - 8) top = r.top - menuH - 4;
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
+async function showChatFilesMenu(btn) {
+  const menu = document.createElement('div');
+  menu.className = 'chatMenuDropdown';
+  menu.style.minWidth = '220px';
+  const loadingRow = document.createElement('div');
+  loadingRow.className = 'chatMenuItem';
+  loadingRow.style.color = 'var(--muted)';
+  loadingRow.textContent = 'Loading...';
+  menu.appendChild(loadingRow);
+  document.body.appendChild(menu);
+  positionMenuFromButton(menu, btn);
+
+  let files = [];
+  try {
+    const res = await fetch(`/api/chats/${activeChatId}/messages`);
+    if (res.ok) {
+      const msgs = await res.json();
+      msgs.forEach(m => (m.files || []).forEach(fn => files.push(fn)));
+    }
+  } catch (e) { /* ignore */ }
+
+  menu.innerHTML = '';
+  if (!files.length) {
+    const empty = document.createElement('div');
+    empty.className = 'chatMenuItem';
+    empty.style.color = 'var(--muted)';
+    empty.textContent = 'Is chat mein koi file attach nahi hai.';
+    menu.appendChild(empty);
+  } else {
+    files.forEach(fn => {
+      const row = document.createElement('div');
+      row.className = 'chatMenuItem';
+      row.innerHTML = `<span class="ico">📄</span><span>${fn.replace(/</g, '&lt;')}</span>`;
+      menu.appendChild(row);
+    });
+  }
+  positionMenuFromButton(menu, btn);
+}
+
+async function archiveChatConfirm(c) {
+  if (!confirm('Ye chat archive karni hai? Ye sidebar list se hat jayegi.')) return;
+  const res = await fetch(`/api/chats/${c.id}/archive`, { method: 'POST' });
+  if (res.ok) {
+    if (activeChatId === c.id) { activeChatId = null; showHero(); }
+    await loadChats();
+  }
 }
 
 async function togglePin(c) {
@@ -1786,7 +1959,7 @@ async function sendMessage(text) {
           aiBodyEl.classList.remove('typingDots');
           aiBodyEl.textContent = '⚠️ ' + payload.error;
         } else if (payload.done) {
-          statusEl.textContent = '🟢 Ready';
+          setIdleStatus();
           if (finalText.trim()) speak(finalText);
         }
       }
@@ -1797,7 +1970,7 @@ async function sendMessage(text) {
     }
   } catch (err) {
     if (err.name === 'AbortError') {
-      statusEl.textContent = '🟢 Ready';
+      setIdleStatus();
       aiBodyEl.classList.remove('typingDots');
       if (!finalText) aiBodyEl.textContent = '⏹️ Rok diya gaya.';
     } else {
