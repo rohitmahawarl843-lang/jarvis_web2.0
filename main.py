@@ -404,7 +404,8 @@ def list_chats(request: Request):
     user = get_current_user(request)
     if not user:
         return unauth()
-    rows = chats_col.find({"user_id": user["id"]}).sort([("pinned", -1), ("created_at", -1)])
+    # Archived chats list mein nahi dikhte (Archive option se hide ho jaate hain).
+    rows = chats_col.find({"user_id": user["id"], "archived": {"$ne": True}}).sort([("pinned", -1), ("created_at", -1)])
     return [
         {
             "id": r["chat_id"], "title": r["title"], "created_at": r["created_at"],
@@ -441,6 +442,19 @@ def toggle_pin(chat_id: str, request: Request):
     new_pinned = not chat_row.get("pinned", False)
     chats_col.update_one({"chat_id": chat_id, "user_id": user["id"]}, {"$set": {"pinned": new_pinned}})
     return {"status": "ok", "pinned": new_pinned}
+
+
+@app.post("/api/chats/{chat_id}/archive")
+def toggle_archive(chat_id: str, request: Request):
+    user = get_current_user(request)
+    if not user:
+        return unauth()
+    chat_row = chats_col.find_one({"chat_id": chat_id, "user_id": user["id"]})
+    if not chat_row:
+        return JSONResponse({"error": "Chat not found"}, status_code=404)
+    new_archived = not chat_row.get("archived", False)
+    chats_col.update_one({"chat_id": chat_id, "user_id": user["id"]}, {"$set": {"archived": new_archived}})
+    return {"status": "ok", "archived": new_archived}
 
 
 # ---------------- Skills (saved prompt templates) ----------------
@@ -536,7 +550,10 @@ def get_messages(chat_id: str, request: Request):
     if not chat_row:
         return JSONResponse({"error": "Chat not found"}, status_code=404)
     rows = messages_col.find({"chat_id": chat_id}).sort("_id", 1)
-    return [{"role": r["role"], "text": r["text"], "created_at": r["created_at"]} for r in rows]
+    return [
+        {"role": r["role"], "text": r["text"], "created_at": r["created_at"], "files": r.get("files", [])}
+        for r in rows
+    ]
 
 
 @app.put("/api/chats/{chat_id}")
@@ -617,6 +634,7 @@ async def chat(
             previews.append(preview)
 
     display_text = text or "Attached file(s) ka data analyze karo."
+    attached_filenames = [f.filename for f in real_files]
 
     if user:
         history_rows = messages_col.find({"chat_id": chat_id}).sort("_id", 1)
@@ -633,11 +651,14 @@ async def chat(
     contents.append(types.Content(role="user", parts=current_parts))
 
     if user:
-        messages_col.insert_one({"chat_id": chat_id, "role": "user", "text": display_text, "created_at": now_utc()})
+        messages_col.insert_one({
+            "chat_id": chat_id, "role": "user", "text": display_text,
+            "files": attached_filenames, "created_at": now_utc(),
+        })
         if chat_row["title"] == "New chat":
             chats_col.update_one({"chat_id": chat_id}, {"$set": {"title": display_text[:40]}})
     else:
-        history.append({"role": "user", "text": display_text})
+        history.append({"role": "user", "text": display_text, "files": attached_filenames})
 
     tools = get_tools(mode)
 
