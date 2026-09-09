@@ -308,11 +308,14 @@
   .sideBtn:hover { background: var(--hover); }
   #newChatBtn { background: var(--grad); color: white; font-weight: 600; margin-bottom: 8px; box-shadow: 0 6px 18px rgba(124,110,230,0.3); }
   #newChatBtn:hover { opacity: 0.9; background: var(--grad); }
+  #searchWrap { position: relative; margin: 4px 0 10px 0; display: none; }
+  #searchWrap .searchIco { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
   #searchInput {
-    width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--card); color: var(--text); font-size: 16px; margin: 4px 0 10px 0; outline: none;
-    font-family: inherit;
+    width: 100%; padding: 10px 12px 10px 34px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); font-size: 16px; margin: 0; outline: none;
+    font-family: inherit; box-sizing: border-box;
   }
+  #searchInput:focus { border-color: var(--accent); }
   #chatList { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
   #projectChips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .projectChip {
@@ -372,7 +375,7 @@
   /* ---- "Cloud style" icon row: mute/voice, theme, account — pill-shaped circular
          buttons that mirror the landing page's heroChip / capsulePill treatment ---- */
   #sidebarBottom { border-top: 1px solid var(--border); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
-  #userLabel { font-size: 12px; color: var(--muted); padding: 0 4px; font-weight: 600; font-family: var(--font-mono); }
+  #userLabel { font-size: 12.5px; color: var(--muted); padding: 0 4px; font-weight: 600; font-family: var(--font-mono); display: flex; align-items: center; gap: 6px; }
   .sidebarIconRow { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
   .sideIconBtn {
     width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
@@ -402,9 +405,10 @@
   #status { display: none !important; }
   #exportBtn {
     margin-left: auto;
+    display: flex; align-items: center; gap: 7px;
     background: linear-gradient(135deg, rgba(124,110,230,0.14), rgba(96,165,250,0.10));
     border: 1px solid rgba(124,110,230,0.28); border-radius: 10px; color: var(--accent);
-    cursor: pointer; font-size: 12px; padding: 7px 14px; font-weight: 600; transition: all 0.2s; flex-shrink: 0;
+    cursor: pointer; font-size: 12.5px; padding: 8px 14px; font-weight: 600; transition: all 0.2s; flex-shrink: 0;
   }
   #exportBtn:hover { border-color: var(--accent); background: rgba(124,110,230,0.22); }
   #topMenuBtn {
@@ -543,8 +547,8 @@
     /* Mobile phone ke status bar jaisa — net speed hamesha dikhega, sirf compact */
     #status { font-size: 10px; padding: 4px 8px; max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     #guestBadge { font-size: 10px; padding: 2px 8px; }
-    #exportBtn { font-size: 0; padding: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
-    #exportBtn::before { content: "⬇️"; font-size: 14px; }
+    #exportBtn { padding: 8px; width: 34px; height: 34px; }
+    #exportBtn .btnLabel { display: none; }
     #topMenuBtn { font-size: 17px; padding: 6px 7px; }
     #hero h1 { font-size: 26px; }
     #heroTag { font-size: 11px; padding: 6px 12px; }
@@ -838,9 +842,12 @@ for item in items:
 
   <div id="sidebar">
     <div id="brand"><div id="brandLogo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M5 7.5c3 1.5 11 1.5 14 0"/><path d="M5 16.5c3-1.5 11-1.5 14 0"/></svg></div><span class="nm">World AI</span><span id="brandBeta">beta</span></div>
-    <button class="sideBtn" id="newChatBtn">➕ New chat</button>
+    <button class="sideBtn" id="newChatBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New chat</button>
 
-    <input id="searchInput" placeholder="🔍 Search chats" style="display:none;" />
+    <div id="searchWrap" style="display:none;">
+      <svg class="searchIco" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchInput" placeholder="Search chats" />
+    </div>
     <div id="projectChips" style="display:none;"></div>
     <div id="chatList" style="display:none;"></div>
 
@@ -852,9 +859,9 @@ for item in items:
     <div id="sidebarBottom">
       <div id="userLabel"></div>
       <div class="sidebarIconRow">
-        <button class="sideIconBtn on" id="ttsBtn" title="Voice: On">🔊</button>
-        <button class="sideIconBtn" id="themeBtn" title="Dark mode">🌙</button>
-        <button class="sideIconBtn" id="authActionBtn" title="Login / Sign up">🔐</button>
+        <button class="sideIconBtn on" id="ttsBtn" title="Voice: On"></button>
+        <button class="sideIconBtn" id="themeBtn" title="Dark mode"></button>
+        <button class="sideIconBtn" id="authActionBtn" title="Login / Sign up"></button>
       </div>
     </div>
   </div>
@@ -866,7 +873,7 @@ for item in items:
       <span id="chatTitle">World AI</span>
       <span id="guestBadge" style="display:none;">Guest — not saved</span>
       <span id="status">🟢 Ready</span>
-      <button id="exportBtn">⬇️ Export</button>
+      <button id="exportBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7 11 12 16 17 11"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span class="btnLabel">Export</span></button>
       <button id="topMenuBtn" title="More options">⋮</button>
     </div>
 
@@ -1006,13 +1013,27 @@ document.querySelectorAll('#demoTabBar .tabBtn').forEach(btn => {
 // ======================================================================
 let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError, authSubmitBtn,
     authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
-    sidebarEl, chatListEl, projectChipsEl, searchInput, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle,
+    sidebarEl, chatListEl, projectChipsEl, searchInput, searchWrap, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle,
     chatTitleEl, exportBtn, topMenuBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
     attachBtn, fileInput, searchModeBtn, codeModeBtn;
 
 let isSignup = false;
 let isLoggedIn = false;
 let chats = [];
+
+/* Consistent stroke-icon set (matches the brand mark style) — used instead of emoji
+   so icons render identically across every OS/browser, regardless of emoji font support. */
+const ICONS = {
+  speakerOn: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  speakerOff: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 5V4L8 9H4z"/><line x1="17" y1="9" x2="23" y2="15"/><line x1="23" y1="9" x2="17" y2="15"/></svg>',
+  moon: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>',
+  sun: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="12" x2="1.5" y2="12"/><line x1="22.5" y1="12" x2="20" y2="12"/><line x1="4.9" y1="4.9" x2="6.5" y2="6.5"/><line x1="17.5" y1="17.5" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.5" y2="17.5"/><line x1="17.5" y1="6.5" x2="19.1" y2="4.9"/></svg>',
+  lock: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  logout: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+  download: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7 11 12 16 17 11"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>',
+  user: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+};
+
 let projects = [];
 let skills = [];
 let activeProjectFilter = null;
@@ -1045,6 +1066,7 @@ function initApp() {
   chatListEl = document.getElementById('chatList');
   projectChipsEl = document.getElementById('projectChips');
   searchInput = document.getElementById('searchInput');
+  searchWrap = document.getElementById('searchWrap');
   newChatBtn = document.getElementById('newChatBtn');
   themeBtn = document.getElementById('themeBtn');
   ttsBtn = document.getElementById('ttsBtn');
@@ -1354,13 +1376,13 @@ async function checkAuth() {
 
 async function enterLoggedInMode(username) {
   isLoggedIn = true;
-  userLabel.textContent = '👤 ' + username;
-  searchInput.style.display = 'block';
+  userLabel.innerHTML = ICONS.user + '<span>' + username + '</span>';
+  searchWrap.style.display = 'block';
   chatListEl.style.display = 'flex';
   guestNotice.style.display = 'none';
   guestBadge.style.display = 'none';
   heroSub.style.display = 'none';
-  authActionBtn.textContent = '🚪';
+  authActionBtn.innerHTML = ICONS.logout;
   authActionBtn.title = 'Logout';
   authActionBtn.classList.remove('on');
   authActionBtn.onclick = doLogout;
@@ -1372,14 +1394,14 @@ async function enterLoggedInMode(username) {
 
 function enterGuestMode() {
   isLoggedIn = false;
-  userLabel.textContent = '';
-  searchInput.style.display = 'none';
+  userLabel.innerHTML = '';
+  searchWrap.style.display = 'none';
   chatListEl.style.display = 'none';
   projectChipsEl.style.display = 'none';
   guestNotice.style.display = 'flex';
   guestBadge.style.display = 'inline-block';
   heroSub.style.display = 'block';
-  authActionBtn.textContent = '🔐';
+  authActionBtn.innerHTML = ICONS.lock;
   authActionBtn.title = 'Login / Sign up';
   authActionBtn.classList.remove('on');
   authActionBtn.onclick = openAuth;
@@ -1388,13 +1410,13 @@ function enterGuestMode() {
 }
 
 function applyTheme(mode) {
-  if (mode === 'dark') { document.body.classList.add('dark'); themeBtn.textContent = '☀️'; themeBtn.title = 'Light mode'; }
-  else { document.body.classList.remove('dark'); themeBtn.textContent = '🌙'; themeBtn.title = 'Dark mode'; }
+  if (mode === 'dark') { document.body.classList.add('dark'); themeBtn.innerHTML = ICONS.sun; themeBtn.title = 'Light mode'; }
+  else { document.body.classList.remove('dark'); themeBtn.innerHTML = ICONS.moon; themeBtn.title = 'Dark mode'; }
   localStorage.setItem('jarvis_theme', mode);
 }
 
 function applyTts(mode) {
-  ttsBtn.textContent = mode === 'on' ? '🔊' : '🔇';
+  ttsBtn.innerHTML = mode === 'on' ? ICONS.speakerOn : ICONS.speakerOff;
   ttsBtn.title = mode === 'on' ? 'Voice: On' : 'Voice: Off (muted)';
   ttsBtn.classList.toggle('on', mode === 'on');
   localStorage.setItem('jarvis_tts', mode);
