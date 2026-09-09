@@ -395,8 +395,11 @@ def list_chats(request: Request):
     user = get_current_user(request)
     if not user:
         return unauth()
-    rows = chats_col.find({"user_id": user["id"]}).sort("created_at", -1)
-    return [{"id": r["chat_id"], "title": r["title"], "created_at": r["created_at"]} for r in rows]
+    rows = chats_col.find({"user_id": user["id"]}).sort([("pinned", -1), ("created_at", -1)])
+    return [
+        {"id": r["chat_id"], "title": r["title"], "created_at": r["created_at"], "pinned": r.get("pinned", False)}
+        for r in rows
+    ]
 
 
 @app.post("/api/chats")
@@ -410,8 +413,22 @@ def create_chat(request: Request):
         "user_id": user["id"],
         "title": "New chat",
         "created_at": now_utc(),
+        "pinned": False,
     })
     return {"id": chat_id, "title": "New chat"}
+
+
+@app.post("/api/chats/{chat_id}/pin")
+def toggle_pin(chat_id: str, request: Request):
+    user = get_current_user(request)
+    if not user:
+        return unauth()
+    chat_row = chats_col.find_one({"chat_id": chat_id, "user_id": user["id"]})
+    if not chat_row:
+        return JSONResponse({"error": "Chat not found"}, status_code=404)
+    new_pinned = not chat_row.get("pinned", False)
+    chats_col.update_one({"chat_id": chat_id, "user_id": user["id"]}, {"$set": {"pinned": new_pinned}})
+    return {"status": "ok", "pinned": new_pinned}
 
 
 @app.get("/api/chats/{chat_id}/messages")
