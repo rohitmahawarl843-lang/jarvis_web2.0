@@ -162,9 +162,6 @@
   .demoBody { padding: 24px; min-height: 260px; }
   .demoMsg { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
   .demoMsg.user { justify-content: flex-end; }
-  .demoAvatar { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-  .demoAvatar.ai { background: var(--grad); color: white; box-shadow: 0 4px 12px rgba(124,110,230,0.3); }
-  .demoAvatar.user { background: linear-gradient(135deg, #34d399, #0ea5e9); color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(14,165,233,0.3); }
   .demoBubble { padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; max-width: 380px; }
   .demoBubble.ai { background: var(--panel); border-bottom-left-radius: 4px; color: var(--text); }
   .demoBubble.user { background: var(--grad); color: white; border-bottom-right-radius: 4px; }
@@ -402,7 +399,9 @@
     background: rgba(124,110,230,0.10); border: 1px solid rgba(124,110,230,0.22);
     padding: 5px 12px; border-radius: 20px; flex-shrink: 0;
   }
+  #status { display: none !important; }
   #exportBtn {
+    margin-left: auto;
     background: linear-gradient(135deg, rgba(124,110,230,0.14), rgba(96,165,250,0.10));
     border: 1px solid rgba(124,110,230,0.28); border-radius: 10px; color: var(--accent);
     cursor: pointer; font-size: 12px; padding: 7px 14px; font-weight: 600; transition: all 0.2s; flex-shrink: 0;
@@ -641,15 +640,12 @@
 
       <div class="demoBody" id="demoTabChat">
         <div class="demoMsg">
-          <div class="demoAvatar ai">W</div>
           <div class="demoBubble ai">Hi! I'm World AI. What can I help you with today?</div>
         </div>
         <div class="demoMsg user">
           <div class="demoBubble user">Mera Python code optimize kar do</div>
-          <div class="demoAvatar user">U</div>
         </div>
         <div class="demoMsg">
-          <div class="demoAvatar ai">W</div>
           <div class="demoBubble ai">Sure! I can see three improvements:<br><br><strong>1. Use a list comprehension</strong> — 3x faster than the loop.<br><strong>2. Cache repeated lookups</strong> outside the loop.</div>
         </div>
       </div>
@@ -1814,17 +1810,10 @@ function renderMarkdown(text) {
   return DOMPurify.sanitize(raw);
 }
 
-/* addBubble/addTypingBubble now mirror the landing-page demo's message design:
-   a small gradient "J" avatar (or "U" for the user) next to the bubble,
-   instead of an emoji name label — keeps the AI's visual identity consistent
-   across the marketing page and the real app. */
+/* addBubble/addTypingBubble: plain bubbles, no avatar icon. */
 function addBubble(text, isUser) {
   const row = document.createElement('div');
   row.className = 'msgRow ' + (isUser ? 'user' : 'ai');
-
-  const avatar = document.createElement('div');
-  avatar.className = 'demoAvatar ' + (isUser ? 'user' : 'ai');
-  avatar.textContent = isUser ? 'U' : 'W';
 
   const b = document.createElement('div');
   b.className = 'bubble ' + (isUser ? 'user' : 'ai');
@@ -1847,7 +1836,6 @@ function addBubble(text, isUser) {
   }
   body.dataset.raw = text;
 
-  row.appendChild(avatar);
   row.appendChild(b);
   chatEl.appendChild(row);
   chatEl.scrollTop = chatEl.scrollHeight;
@@ -1857,7 +1845,7 @@ function addBubble(text, isUser) {
 function addTypingBubble() {
   const row = document.createElement('div');
   row.className = 'msgRow ai';
-  row.innerHTML = '<div class="demoAvatar ai">W</div><div class="bubble ai"><div class="body typingDots"><span></span><span></span><span></span></div></div>';
+  row.innerHTML = '<div class="bubble ai"><div class="body typingDots"><span></span><span></span><span></span></div></div>';
   chatEl.appendChild(row);
   chatEl.scrollTop = chatEl.scrollHeight;
   return row.querySelector('.body');
