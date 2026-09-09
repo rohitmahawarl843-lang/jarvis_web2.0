@@ -311,13 +311,16 @@ def extract_piece(chunk):
 
 # ---------------- App ----------------
 
-app = FastAPI(title="Jarvis AI Web")
+app = FastAPI(title="World AI Web")
 app.mount("/static", StaticFiles(directory=os.path.join(APP_DIR, "static")), name="static")
 
 
 @app.get("/")
 def index():
-    return FileResponse(os.path.join(APP_DIR, "static", "index.html"))
+    return FileResponse(
+        os.path.join(APP_DIR, "static", "index.html"),
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
 
 
 @app.get("/health")
