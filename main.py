@@ -70,6 +70,8 @@ users_col = mongo_db["users"]
 sessions_col = mongo_db["sessions"]
 chats_col = mongo_db["chats"]
 messages_col = mongo_db["messages"]
+skills_col = mongo_db["skills"]
+projects_col = mongo_db["projects"]
 
 # ---------------- Multiple API keys support (multi-provider) ----------------
 # Gemini: GEMINI_API_KEYS="key1,key2,key3" (comma separated) on Railway.
@@ -138,6 +140,10 @@ def init_db():
     chats_col.create_index("chat_id", unique=True)
     chats_col.create_index("user_id")
     messages_col.create_index("chat_id")
+    skills_col.create_index("skill_id", unique=True)
+    skills_col.create_index("user_id")
+    projects_col.create_index("project_id", unique=True)
+    projects_col.create_index("user_id")
 
 init_db()
 
@@ -400,7 +406,10 @@ def list_chats(request: Request):
         return unauth()
     rows = chats_col.find({"user_id": user["id"]}).sort([("pinned", -1), ("created_at", -1)])
     return [
-        {"id": r["chat_id"], "title": r["title"], "created_at": r["created_at"], "pinned": r.get("pinned", False)}
+        {
+            "id": r["chat_id"], "title": r["title"], "created_at": r["created_at"],
+            "pinned": r.get("pinned", False), "project_id": r.get("project_id"),
+        }
         for r in rows
     ]
 
@@ -432,6 +441,90 @@ def toggle_pin(chat_id: str, request: Request):
     new_pinned = not chat_row.get("pinned", False)
     chats_col.update_one({"chat_id": chat_id, "user_id": user["id"]}, {"$set": {"pinned": new_pinned}})
     return {"status": "ok", "pinned": new_pinned}
+
+
+# ---------------- Skills (saved prompt templates) ----------------
+
+@app.get("/api/skills")
+def list_skills(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return unauth()
+    rows = skills_col.find({"user_id": user["id"]}).sort("created_at", -1)
+    return [{"id": r["skill_id"], "name": r["name"], "prompt": r["prompt"]} for r in rows]
+
+
+@app.post("/api/skills")
+async def create_skill(request: Request, name: str = Form(...), prompt: str = Form(...)):
+    user = get_current_user(request)
+    if not user:
+        return unauth()
+    name = name.strip()[:60]
+    prompt = prompt.strip()
+    if not name or not prompt:
+        return JSONResponse({"error": "Name and prompt dono chahiye."}, status_code=400)
+    skill_id = str(uuid.uuid4())
+    skills_col.insert_one({
+        "skill_id": skill_id, "user_id": user["id"], "name": name,
+        "prompt": prompt, "created_at": now_utc(),
+    })
+    return {"id": skill_id, "name": name, "prompt": prompt}
+
+
+@app.delete("/api/skills/{skill_id}")
+def delete_skill(skill_id: str, request: Request):
+    user = get_current_user(request)
+    if not user:
+        return unauth()
+    skills_col.delete_one({"skill_id": skill_id, "user_id": user["id"]})
+    return {"status": "deleted"}
+
+
+# ---------------- Projects (chat folders) ----------------
+
+@app.get("/api/projects")
+def list_projects(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return unauth()
+    rows = projects_col.find({"user_id": user["id"]}).sort("created_at", -1)
+    return [{"id": r["project_id"], "name": r["name"]} for r in rows]
+
+
+@app.post("/api/projects")
+async def create_project(request: Request, name: str = Form(...)):
+    user = get_current_user(request)
+    if not user:
+        return unauth()
+    name = name.strip()[:60]
+    if not name:
+        return JSONResponse({"error": "Project ka naam chahiye."}, status_code=400)
+    project_id = str(uuid.uuid4())
+    projects_col.insert_one({"project_id": project_id, "user_id": user["id"], "name": name, "created_at": now_utc()})
+    return {"id": project_id, "name": name}
+
+
+@app.delete("/api/projects/{project_id}")
+def delete_project(project_id: str, request: Request):
+    user = get_current_user(request)
+    if not user:
+        return unauth()
+    projects_col.delete_one({"project_id": project_id, "user_id": user["id"]})
+    chats_col.update_many({"project_id": project_id, "user_id": user["id"]}, {"$set": {"project_id": None}})
+    return {"status": "deleted"}
+
+
+@app.post("/api/chats/{chat_id}/project")
+async def set_chat_project(chat_id: str, request: Request, project_id: str = Form(None)):
+    user = get_current_user(request)
+    if not user:
+        return unauth()
+    chat_row = chats_col.find_one({"chat_id": chat_id, "user_id": user["id"]})
+    if not chat_row:
+        return JSONResponse({"error": "Chat not found"}, status_code=404)
+    pid = project_id if project_id else None
+    chats_col.update_one({"chat_id": chat_id, "user_id": user["id"]}, {"$set": {"project_id": pid}})
+    return {"status": "ok", "project_id": pid}
 
 
 @app.get("/api/chats/{chat_id}/messages")
