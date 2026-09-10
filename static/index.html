@@ -7,12 +7,6 @@
 <meta name="description" content="World AI — chat, web search, code execution, aur file analysis, sab ek jagah. Hindi, English, ya Hinglish, jis bhasha mein baat karo, usi mein jawab milega.">
 <meta name="theme-color" content="#7c6ee6">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Crect width='24' height='24' rx='7' fill='%237c6ee6'/%3E%3Ccircle cx='12' cy='12' r='7' stroke='white' stroke-width='1.6'/%3E%3Cellipse cx='12' cy='12' rx='3.2' ry='7' stroke='white' stroke-width='1.6'/%3E%3Cline x1='5' y1='12' x2='19' y2='12' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E">
-<meta property="og:title" content="World AI — Ek Assistant, Har Kaam Ke Liye">
-<meta property="og:description" content="Chat, web search, code execution, aur file analysis — sab ek jagah, free mein.">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="World AI">
-<meta name="twitter:description" content="Chat, web search, code execution, aur file analysis — sab ek jagah, free mein.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
@@ -54,11 +48,8 @@
       radial-gradient(450px circle at 30% 100%, rgba(167,139,250,0.09), transparent 60%);
   }
 
-  /* ============================================================
-     LANDING VIEW
-     ============================================================ */
+  /* LANDING VIEW */
   #landingView { position: relative; z-index: 1; }
-
   .landNav {
     position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px);
     background: color-mix(in srgb, var(--bg) 78%, transparent);
@@ -99,7 +90,6 @@
   .sectionHead { text-align: center; margin-bottom: 56px; }
   .sectionHead h2 { font-family: var(--font-serif); font-weight: 400; font-size: 42px; margin: 0; letter-spacing: -0.5px; }
 
-  /* Hero */
   #landHero { text-align: center; padding: 96px 24px 60px 24px; }
   .landWelcome {
     font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: 1.5px;
@@ -245,10 +235,8 @@
     .footCols { grid-template-columns: 1fr 1fr; }
   }
 
-  /* ============================================================
-     APP VIEW (chat application)
-     ============================================================ */
-  #appView { display: none; height: 100vh; }
+  /* APP VIEW */
+  #appView { display: none; height: 100vh; position: relative; }
   #appView.show { display: flex; }
 
   .bubble p:first-child { margin-top: 0; }
@@ -323,17 +311,13 @@
     background: var(--panel); border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
   }
   .projectChip.active { background: var(--grad); color: white; border-color: transparent; }
-  .chatGroupLabel { font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); padding: 12px 12px 4px 12px; }
   .chatRow {
     display: flex; align-items: center; padding: 9px 8px 9px 12px; border-radius: 10px;
-    font-size: 13px; cursor: pointer; color: var(--text); gap: 4px;
+    font-size: 13px; cursor: pointer; color: var(--text); gap: 4px; position: relative;
   }
   .chatRow:hover, .chatRow.active { background: var(--hover); }
   .chatRow.active { border-left: 3px solid var(--accent); }
   .chatRow .title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .chatRow { position: relative; }
-  .chatRow .rowBtn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 3px; display: none; }
-  .chatRow:hover .rowBtn { display: inline-block; }
   .chatRow .pinIcon { font-size: 11px; margin-right: 4px; opacity: 0.7; flex-shrink: 0; }
 
   .chatMenuBtn {
@@ -372,8 +356,6 @@
     padding: 10px 18px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 6px 18px rgba(124,110,230,0.3);
   }
 
-  /* ---- "Cloud style" icon row: mute/voice, theme, account — pill-shaped circular
-         buttons that mirror the landing page's heroChip / capsulePill treatment ---- */
   #sidebarBottom { border-top: 1px solid var(--border); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
   #userLabel { font-size: 12.5px; color: var(--muted); padding: 0 4px; font-weight: 600; font-family: var(--font-mono); display: flex; align-items: center; gap: 6px; }
   .sidebarIconRow { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
@@ -385,7 +367,6 @@
   }
   .sideIconBtn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,110,230,0.08); }
   .sideIconBtn.on { background: var(--grad); border-color: transparent; color: white; box-shadow: 0 4px 14px rgba(124,110,230,0.3); }
-  .sideIconBtn.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(229,72,77,0.08); }
 
   #main { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
   #topbar {
@@ -396,16 +377,9 @@
   #backToLandingBtn:hover { color: var(--text); background: var(--hover); }
   #menuToggle { display: none; background: none; border: none; font-size: 18px; color: var(--text); cursor: pointer; flex-shrink: 0; }
   #chatTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-  #status {
-    margin-left: auto; display: flex; align-items: center; gap: 6px;
-    font-size: 12px; font-weight: 500; font-family: var(--font-mono); color: var(--accent);
-    background: rgba(124,110,230,0.10); border: 1px solid rgba(124,110,230,0.22);
-    padding: 5px 12px; border-radius: 20px; flex-shrink: 0;
-  }
   #status { display: none !important; }
   #exportBtn {
-    margin-left: auto;
-    display: flex; align-items: center; gap: 7px;
+    margin-left: auto; display: flex; align-items: center; gap: 7px;
     background: linear-gradient(135deg, rgba(124,110,230,0.14), rgba(96,165,250,0.10));
     border: 1px solid rgba(124,110,230,0.28); border-radius: 10px; color: var(--accent);
     cursor: pointer; font-size: 12.5px; padding: 8px 14px; font-weight: 600; transition: all 0.2s; flex-shrink: 0;
@@ -434,9 +408,8 @@
   #hero p { color: var(--muted); font-size: 14px; margin: 0; max-width: 460px; }
   #heroChipsApp { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 560px; margin-top: 4px; }
 
-  #chat { flex: 1; overflow-y: auto; padding: 25px 15%; display: flex; flex-direction: column; gap: 18px; }
+  #chat { flex: 1; overflow-y: auto; padding: 25px 15% 90px 15%; display: flex; flex-direction: column; gap: 18px; }
 
-  /* message row now pairs an avatar (matching the landing "J" brand mark) with the bubble */
   .msgRow { display: flex; align-items: flex-start; gap: 10px; max-width: 100%; }
   .msgRow.ai { align-self: flex-start; max-width: 80%; }
   .msgRow.user { align-self: flex-end; flex-direction: row-reverse; max-width: 70%; }
@@ -462,19 +435,53 @@
   .fileChip img { width: 22px; height: 22px; object-fit: cover; border-radius: 6px; }
   .fileChip button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; }
 
-  #modeRow { display: none; }
-  .modeBtn {
-    display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 12px;
-    border: 1px solid var(--border); background: var(--card); color: var(--muted);
-    cursor: pointer; font-size: 12.5px; font-weight: 500; font-family: inherit; transition: all 0.15s;
+  /* ---------------- ChatGPT-Style Floating Action Dock ---------------- */
+  .floating-action-bar {
+    position: absolute;
+    bottom: 82px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(22, 21, 35, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    z-index: 10;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  body:not(.dark) .floating-action-bar {
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 8px 24px rgba(124, 110, 230, 0.15);
+  }
+  .floating-pill-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 20px;
+    transition: all 0.15s;
+    font-family: inherit;
     white-space: nowrap;
   }
-  .modeBtn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,110,230,0.06); }
-  .modeBtn.active { background: linear-gradient(135deg, rgba(124,110,230,0.22), rgba(96,165,250,0.12)); border-color: rgba(124,110,230,0.35); color: var(--text); }
+  .floating-pill-btn:hover { color: var(--text); background: var(--hover); }
+  .floating-pill-btn.active {
+    background: var(--grad);
+    color: white;
+    box-shadow: 0 4px 12px rgba(124,110,230,0.3);
+  }
 
-  /* Cloud-style circular action buttons in the composer, matching the landing
-     page's send button + hero chip hover treatment */
-  #inputWrap { padding: 4px 15% 22px 15%; }
+  #inputWrap { padding: 4px 15% 22px 15%; position: relative; z-index: 5; }
   #inputBarOuter { border-radius: 26px; padding: 1.5px; background: linear-gradient(135deg, rgba(124,110,230,0.5), rgba(79,163,227,0.3)); }
   #inputBar { display: flex; align-items: center; gap: 6px; background: var(--card); border-radius: 25px; padding: 8px 8px 8px 16px; }
   #msgInput { flex: 1; border: none; background: transparent; color: var(--text); font-size: 16px; outline: none; padding: 8px 0; font-family: inherit; }
@@ -493,66 +500,30 @@
   #hint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; font-family: var(--font-mono); }
 
   @media (max-width: 768px) {
-    #sidebar { position: fixed; z-index: 20; height: 100vh; transform: translateX(-100%); }
+    #sidebar { position: fixed; z-index: 50; height: 100vh; transform: translateX(-100%); }
     #sidebar.open { transform: translateX(0); }
     #menuToggle { display: block; }
-    #chat, #fileChips { padding-left: 5%; padding-right: 5%; }
-    #modeRow { margin: 0 0 8px 0; padding-left: 5%; padding-right: 5%; }
-    #inputWrap { padding-left: 5%; padding-right: 5%; }
+    #chat, #fileChips, #inputWrap { padding-left: 5%; padding-right: 5%; }
     #hero h1 { font-size: 32px; }
     .msgRow.ai, .msgRow.user { max-width: 92%; }
+    .floating-action-bar { bottom: 78px; width: 90%; justify-content: center; }
   }
 
-  /* ---------------- Small phones (iPhone SE, older Android, etc.) ---------------- */
   @media (max-width: 480px) {
-    /* Landing page */
     .landNavInner { padding: 0 14px; height: 58px; }
     .landBrand span.name { font-size: 14px; }
     .landBrand .beta { display: none; }
     .btnGrad { padding: 8px 14px; font-size: 12.5px; }
     #landHero { padding: 44px 16px 32px 16px; }
-    .landWelcome { font-size: 11px; }
-    .heroBadge { font-size: 11px; padding: 6px 12px; text-align: center; }
-    #landHero h1 { font-size: 28px; letter-spacing: -0.5px; }
-    #landHero > p.sub { font-size: 14.5px; padding: 0 4px; }
-    .heroInputInner { padding: 6px 6px 6px 14px; }
-    .heroInputInner input { font-size: 16px; }
-    .heroChip { font-size: 11.5px; padding: 7px 12px; }
-
-    .landSection { padding: 48px 16px; }
-    .sectionHead { margin-bottom: 36px; }
-    .sectionHead h2 { font-size: 26px; }
-    .eyebrow { font-size: 11px; }
-
-    .tabBar { gap: 6px; }
-    .tabBtn { padding: 8px 12px; font-size: 12.5px; }
-    .demoBody { padding: 16px; min-height: 200px; }
-    .demoBubble { max-width: 220px; font-size: 13px; }
-
-    .featCard, .modeCard { padding: 18px; }
-    .useGrid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .useCard { padding: 16px 10px; }
-
-    .ctaBox { padding: 44px 18px; border-radius: 20px; }
-    .ctaBox h2 { font-size: 26px; }
-    .btnGradLg, .btnOutlineLg { width: 100%; text-align: center; padding: 14px 20px; }
-    .ctaBtns { flex-direction: column; }
-
-    .footCols { grid-template-columns: 1fr 1fr; gap: 22px; }
-    .footBottom { flex-direction: column; align-items: flex-start; }
-
-    /* Chat app */
+    #landHero h1 { font-size: 28px; }
     #topbar { padding: 10px 14px; gap: 6px; }
-    #chatTitle { font-size: 13px; max-width: 70px; }
-    /* Mobile phone ke status bar jaisa — net speed hamesha dikhega, sirf compact */
-    #status { font-size: 10px; padding: 4px 8px; max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #guestBadge { font-size: 10px; padding: 2px 8px; }
+    #chatTitle { font-size: 13px; max-width: 90px; }
     #exportBtn { padding: 8px; width: 34px; height: 34px; }
     #exportBtn .btnLabel { display: none; }
-    #topMenuBtn { font-size: 17px; padding: 6px 7px; }
     #hero h1 { font-size: 26px; }
-    #heroTag { font-size: 11px; padding: 6px 12px; }
     #inputBar { padding: 6px 6px 6px 12px; }
+    .floating-action-bar { padding: 4px 8px; gap: 4px; }
+    .floating-pill-btn { font-size: 11px; padding: 5px 8px; }
   }
 </style>
 </head>
@@ -560,9 +531,8 @@
 
 <div class="ambientBg"></div>
 
-<!-- ================= LANDING VIEW ================= -->
+<!-- LANDING VIEW -->
 <div id="landingView">
-
   <nav class="landNav">
     <div class="landNavInner">
       <div class="landBrand"><div class="landLogo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M5 7.5c3 1.5 11 1.5 14 0"/><path d="M5 16.5c3-1.5 11-1.5 14 0"/></svg></div><span class="name">World AI</span><span class="beta">beta</span></div>
@@ -590,9 +560,9 @@
   <!-- HERO -->
   <section id="landHero">
     <p class="landWelcome">Welcome to World AI Assistant</p>
-    <div class="heroBadge"><span class="dot"></span>World AI 2.0 — now with web search and code execution</div>
+    <div class="heroBadge"><span class="dot"></span>World AI 2.0 — live web search, code execution & voice</div>
     <h1>Ask World AI <span class="grad cursorBlink" id="landTyped">anything.</span></h1>
-    <p class="sub">Your own AI assistant — chat naturally, run web searches, write or execute code, and read your files. All in one place.</p>
+    <p class="sub">Your personal AI assistant — chat naturally, run live web searches, execute code, and analyze documents in real time.</p>
 
     <div class="heroInputWrap">
       <div class="heroInputOuter">
@@ -604,10 +574,10 @@
     </div>
 
     <div class="heroChips">
+      <button class="heroChip" data-fill="Aaj ki taaza khabrein kya hain?">Today's news</button>
       <button class="heroChip" data-fill="Write a Python web scraper">Write a web scraper</button>
       <button class="heroChip" data-fill="Review my business plan">Business plan review</button>
       <button class="heroChip" data-fill="Find a bug in my code">Find a bug in my code</button>
-      <button class="heroChip" data-fill="What's in the news today?">Today's news</button>
       <button class="heroChip" data-fill="Draft an email for me">Draft an email</button>
     </div>
 
@@ -615,12 +585,12 @@
       <div class="capsulePill">🌐 Web search</div>
       <div class="capsulePill">💻 Code run</div>
       <div class="capsulePill">📄 File analysis</div>
-      <div class="capsulePill">🎙️ Voice input</div>
+      <div class="capsulePill">🎙️ Natural voice</div>
       <div class="capsulePill">💬 Chat history</div>
     </div>
   </section>
 
-  <!-- TOOL TABS DEMO -->
+  <!-- DEMO -->
   <section class="landSection">
     <div class="sectionHead">
       <p class="eyebrow">WORLD AI KYA KAR SAKTA HAI</p>
@@ -644,21 +614,21 @@
 
       <div class="demoBody" id="demoTabChat">
         <div class="demoMsg">
-          <div class="demoBubble ai">Hi! I'm World AI. What can I help you with today?</div>
+          <div class="demoBubble ai">Hi! I'm World AI. Aaj main aapki kya madad kar sakta hoon?</div>
         </div>
         <div class="demoMsg user">
           <div class="demoBubble user">Mera Python code optimize kar do</div>
         </div>
         <div class="demoMsg">
-          <div class="demoBubble ai">Sure! I can see three improvements:<br><br><strong>1. Use a list comprehension</strong> — 3x faster than the loop.<br><strong>2. Cache repeated lookups</strong> outside the loop.</div>
+          <div class="demoBubble ai">Sure! Yahan 2 major improvements hain:<br><br><strong>1. Use list comprehension</strong> — Faster iteration.<br><strong>2. Cache repeated lookups</strong> outside loop.</div>
         </div>
       </div>
 
       <div class="demoBody" id="demoTabCode" style="display:none;">
-        <pre style="margin:0;"><span style="color:var(--accent)"># World AI's suggestion: use a list comprehension</span>
+        <pre style="margin:0;"><span style="color:var(--accent)"># World AI Optimized Code</span>
 <span style="color:var(--accent2)">result</span> = [process(x) for x in data if x.valid]
 
-<span style="color:var(--accent)"># Loop ke bahar cache kiya lookup</span>
+<span style="color:var(--accent)"># Cached lookup</span>
 <span style="color:var(--accent2)">lookup</span> = cache.get(key, None)
 for item in items:
     process(item, lookup)</pre>
@@ -667,7 +637,7 @@ for item in items:
       <div class="demoBody" id="demoTabVision" style="display:none;">
         <div class="demoUpload">
           <div class="icon">📎</div>
-          <p style="margin:0;color:var(--muted);font-size:14px;">Drop an image, screenshot, or file here</p>
+          <p style="margin:0;color:var(--muted);font-size:14px;">Drop an image, screenshot, or document</p>
           <p style="margin:0;color:var(--muted);font-size:11px;font-family:var(--font-mono);">PNG · JPG · PDF · CSV · XLSX</p>
         </div>
       </div>
@@ -693,33 +663,33 @@ for item in items:
     <div class="featGrid">
       <div class="featCard">
         <div class="featIcon" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🌐</div>
-        <h3>Web Search</h3>
-        <p>Pulls current events, prices, and research live from the internet instantly.</p>
+        <h3>Live Web Search</h3>
+        <p>Current events, real-time facts, prices, and research live from the internet.</p>
       </div>
       <div class="featCard">
         <div class="featIcon" style="background:rgba(96,165,250,0.15);color:#60a5fa;">💻</div>
         <h3>Code likho aur chalao</h3>
-        <p>Writes and debugs code in 40+ languages, and runs it to show you the actual result.</p>
+        <p>Writes and debugs code, running it in sandboxed environment to verify actual outputs.</p>
       </div>
       <div class="featCard">
         <div class="featIcon" style="background:rgba(52,211,153,0.15);color:#34d399;">📄</div>
-        <h3>File & Document analysis</h3>
-        <p>Upload PDFs, Excel, Word docs, or images — World AI reads them and gives you a summary and insights.</p>
+        <h3>File & Document Analysis</h3>
+        <p>Upload PDFs, Excel, Word docs, or images — World AI parses them and generates clear summaries.</p>
       </div>
       <div class="featCard">
         <div class="featIcon" style="background:rgba(251,146,60,0.15);color:#fb923c;">🎙️</div>
-        <h3>Voice input & output</h3>
-        <p>Bol kar poocho, World AI bol kar jawab bhi de sakta hai — hands-free conversation.</p>
+        <h3>Human-like Voice</h3>
+        <p>Natural conversational pronunciation matching your preferred Hindi/English tone.</p>
       </div>
       <div class="featCard">
         <div class="featIcon" style="background:rgba(244,114,182,0.15);color:#f472b6;">💬</div>
-        <h3>Chat history save</h3>
-        <p>Har conversation save hoti hai, kabhi bhi search karke wapas dekh sakte ho.</p>
+        <h3>Persistent History</h3>
+        <p>Conversations automatically organized with folder and pinning support.</p>
       </div>
       <div class="featCard">
         <div class="featIcon" style="background:rgba(251,191,36,0.15);color:#fbbf24;">⬇️</div>
-        <h3>Export & share</h3>
-        <p>Kisi bhi chat ko ek click mein text file mein export kar lo.</p>
+        <h3>Instant Export</h3>
+        <p>One-click export of transcripts for archiving and sharing.</p>
       </div>
     </div>
   </section>
@@ -727,29 +697,29 @@ for item in items:
   <!-- MODES -->
   <section class="landSection" id="landModes">
     <div class="sectionHead">
-      <p class="eyebrow">SAHI MODE CHUNO</p>
-      <h2>Har kaam ke liye sahi tarika</h2>
+      <p class="eyebrow">MODES</p>
+      <h2>Choose your workflow</h2>
     </div>
     <div class="modeGrid">
       <div class="modeCard" data-appmode="none">
         <div class="modeDot" style="background:#a78bfa;"></div>
         <div class="name">Normal Chat</div>
-        <span class="tag" style="color:#a78bfa;">General</span>
-        <p>Roz-marra ke sawaal, likhna, brainstorming, aur general madad ke liye.</p>
+        <span class="tag" style="color:#a78bfa;">Fast & General</span>
+        <p>Everyday queries, brainstorming, content writing, and logical solutions.</p>
         <span class="try" style="color:#a78bfa;">Try this mode →</span>
       </div>
       <div class="modeCard" data-appmode="search">
         <div class="modeDot" style="background:#60a5fa;"></div>
         <div class="name">Web Search</div>
-        <span class="tag" style="color:#60a5fa;">Live Data</span>
-        <p>For current events, prices, and the latest info — World AI does a live web search.</p>
+        <span class="tag" style="color:#60a5fa;">Live Knowledge</span>
+        <p>Ground answers with actual verified sources from Google live index.</p>
         <span class="try" style="color:#60a5fa;">Try this mode →</span>
       </div>
       <div class="modeCard" data-appmode="code">
         <div class="modeDot" style="background:#34d399;"></div>
         <div class="name">Run Code</div>
-        <span class="tag" style="color:#34d399;">Execute</span>
-        <p>Code likhwao aur seedha chala kar result bhi dekho, bina kahin aur copy-paste kiye.</p>
+        <span class="tag" style="color:#34d399;">Execution</span>
+        <p>Directly runs generated logic and provides outputs alongside explanations.</p>
         <span class="try" style="color:#34d399;">Try this mode →</span>
       </div>
     </div>
@@ -759,36 +729,20 @@ for item in items:
   <section class="landSection landSectionNarrow" id="landUsecases">
     <div class="sectionHead"><h2>Built for everyone</h2></div>
     <div class="useGrid">
-      <div class="useCard"><div class="icon">👨‍💻</div><div class="label">Developers</div><div class="desc">Code, debug, architecture</div></div>
-      <div class="useCard"><div class="icon">✍️</div><div class="label">Writers</div><div class="desc">Drafts, editing</div></div>
-      <div class="useCard"><div class="icon">📊</div><div class="label">Analysts</div><div class="desc">Data, reports</div></div>
-      <div class="useCard"><div class="icon">🎓</div><div class="label">Students</div><div class="desc">Studying, concepts</div></div>
-      <div class="useCard"><div class="icon">💼</div><div class="label">Business</div><div class="desc">Plans, emails</div></div>
-      <div class="useCard"><div class="icon">🎨</div><div class="label">Creators</div><div class="desc">Ideas, content</div></div>
-    </div>
-  </section>
-
-  <!-- ABOUT -->
-  <section class="landSection landSectionNarrow" id="landAbout">
-    <div class="sectionHead"><h2>About World AI</h2></div>
-    <div class="aboutBox">
-      <p>World AI is an all-in-one AI assistant built to help you think, write, code, and research faster — all from a single chat window. It understands the language you speak in and replies the same way, so conversations always feel natural.</p>
-      <ul class="aboutList">
-        <li><strong>Live Web Search</strong> — Get current news, prices, and real-time information pulled straight from the internet.</li>
-        <li><strong>Code Execution</strong> — Write code in 40+ languages and actually run it to verify the output, not just see it printed.</li>
-        <li><strong>File Analysis</strong> — Upload PDFs, Word docs, spreadsheets, or images and get a clear summary or analysis of the content.</li>
-        <li><strong>Voice Input</strong> — Speak instead of typing when it's more convenient.</li>
-        <li><strong>Chat History</strong> — Every conversation is saved to your account so you can pick up right where you left off.</li>
-        <li><strong>Multi-language replies</strong> — Talk in Hindi, English, Hinglish, or any other language — World AI matches you.</li>
-      </ul>
+      <div class="useCard"><div class="icon">👨‍💻</div><div class="label">Developers</div><div class="desc">Code, debug, optimize</div></div>
+      <div class="useCard"><div class="icon">✍️</div><div class="label">Writers</div><div class="desc">Drafts, structure</div></div>
+      <div class="useCard"><div class="icon">📊</div><div class="label">Analysts</div><div class="desc">Reports, spreadsheets</div></div>
+      <div class="useCard"><div class="icon">🎓</div><div class="label">Students</div><div class="desc">Explanations, concepts</div></div>
+      <div class="useCard"><div class="icon">💼</div><div class="label">Business</div><div class="desc">Plans, workflows</div></div>
+      <div class="useCard"><div class="icon">🎨</div><div class="label">Creators</div><div class="desc">Ideas, scripts</div></div>
     </div>
   </section>
 
   <!-- CTA -->
   <section class="landSection" id="landCta">
     <div class="ctaBox">
-      <h2>Get started<br><span class="grad">with your best conversation yet</span></h2>
-      <p>World AI is free — no card, no waiting. Just type and start chatting.</p>
+      <h2>Get started<br><span class="grad">with your smartest assistant</span></h2>
+      <p>Free, powerful, and ready to answer in the exact language you choose.</p>
       <div class="ctaBtns">
         <button class="btnGradLg" id="ctaTryBtn">Get started for free →</button>
         <button class="btnOutlineLg" id="ctaLoginBtn">Log in</button>
@@ -802,15 +756,11 @@ for item in items:
       <div class="footCols">
         <div class="footBrand">
           <div class="landBrand"><div class="landLogo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M5 7.5c3 1.5 11 1.5 14 0"/><path d="M5 16.5c3-1.5 11-1.5 14 0"/></svg></div><span class="name">World AI</span></div>
-          <p>Your own AI assistant. Web search, code, and files — all in one place.</p>
+          <p>Your versatile AI companion with search, vision, execution, and speech.</p>
         </div>
         <div class="footCol">
           <div class="footColTitle">PRODUCT</div>
-          <ul><li><a href="#" data-scroll="landFeatures">Features</a></li><li><a href="#" data-scroll="landModes">Modes</a></li><li><a href="#" data-scroll="landUsecases">Use cases</a></li><li><a href="#" data-scroll="landAbout">About</a></li></ul>
-        </div>
-        <div class="footCol">
-          <div class="footColTitle">RESOURCES</div>
-          <ul><li><a href="#">GitHub</a></li><li><a href="#">Documentation</a></li></ul>
+          <ul><li><a href="#" data-scroll="landFeatures">Features</a></li><li><a href="#" data-scroll="landModes">Modes</a></li><li><a href="#" data-scroll="landUsecases">Use cases</a></li></ul>
         </div>
         <div class="footCol">
           <div class="footColTitle">START</div>
@@ -819,13 +769,12 @@ for item in items:
       </div>
       <div class="footBottom">
         <span>© 2026 World AI · <span class="footCredit">Created by Sachin Saini</span></span>
-        <div class="footSocial"><a href="#">GitHub</a><a href="#">Twitter</a></div>
       </div>
     </div>
   </footer>
 </div>
 
-<!-- ================= APP VIEW (chat application) ================= -->
+<!-- APP VIEW -->
 <div id="appView">
 
   <div id="authOverlay">
@@ -852,7 +801,7 @@ for item in items:
     <div id="chatList" style="display:none;"></div>
 
     <div id="guestNotice" style="display:none;">
-      <span>👋 Guest mode mein ho.<br>Chat history save nahi hogi, refresh karte hi naya chat khulega.</span>
+      <span>👋 Guest mode mein ho.<br>Login karne par conversations save rahengi.</span>
       <button id="guestLoginBtn">Login / Sign up</button>
     </div>
 
@@ -878,43 +827,44 @@ for item in items:
     </div>
 
     <div id="hero">
-      <div id="heroTag"><span class="dot"></span>World AI 2.0 — now with web search and code execution</div>
+      <div id="heroTag"><span class="dot"></span>World AI 2.0 — live web search, code & voice</div>
       <h1>Ask me <span class="grad cursorBlink" id="typedPhrase">anything.</span></h1>
-      <p id="heroSub" style="display:none;">Guest mode — is chat ka data save nahi hoga.</p>
+      <p id="heroSub" style="display:none;">Guest mode — session refresh karne par chat clear hogi.</p>
       <div id="heroChipsApp">
+        <button class="heroChip" data-fill="Aaj ki date aur time kya h?">Aaj ki date kya hai?</button>
         <button class="heroChip" data-fill="Write a Python web scraper">Write a web scraper</button>
         <button class="heroChip" data-fill="What's in the news today?">Today's news</button>
         <button class="heroChip" data-fill="Review my business plan">Business plan review</button>
         <button class="heroChip" data-fill="Find a bug in my code">Find a bug in my code</button>
-        <button class="heroChip" data-fill="Draft an email for me">Draft an email</button>
       </div>
     </div>
+
     <div id="chat" style="display:none;"></div>
     <div id="fileChips"></div>
-    <div id="modeRow">
-      <button class="modeBtn" id="searchModeBtn">🌐 Web Search</button>
-      <button class="modeBtn" id="codeModeBtn">💻 Run Code</button>
+
+    <!-- FLOATING DOCK BAR (ChatGPT Style) -->
+    <div class="floating-action-bar" id="floatingBar">
+      <button class="floating-pill-btn" id="floatSearchBtn">🌐 Live Search</button>
+      <button class="floating-pill-btn" id="floatCodeBtn">💻 Run Code</button>
+      <button class="floating-pill-btn" id="floatShotBtn">📸 Screenshot</button>
     </div>
 
     <div id="inputWrap">
       <div id="inputBarOuter">
         <div id="inputBar">
-          <button class="roundBtn" id="attachBtn" title="Add files, screenshot, or tools"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <button class="roundBtn" id="attachBtn" title="Add files or tools"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
           <input type="file" id="fileInput" hidden multiple accept="image/*,video/*,audio/*,.pdf,.txt,.csv,.xlsx,.xls,.docx" />
           <input id="msgInput" type="text" placeholder="Message World AI..." autocomplete="off" />
           <button class="roundBtn" id="micBtn" title="Bolke poocho"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
           <button id="sendBtn" title="Send">➤</button>
         </div>
       </div>
-      <div id="hint">World AI can read files, search the web, and run code to show you results.</div>
+      <div id="hint">World AI provides live web grounded data, document parsing, and real code execution.</div>
     </div>
   </div>
 </div>
 
 <script>
-// ======================================================================
-// VIEW SWITCHING (landing <-> app)
-// ======================================================================
 const landingView = document.getElementById('landingView');
 const appView = document.getElementById('appView');
 let pendingHeroText = '';
@@ -964,7 +914,6 @@ document.querySelectorAll('.modeCard').forEach(card => {
   card.addEventListener('click', () => goToApp(null, card.dataset.appmode));
 });
 
-// Nav scroll links
 document.querySelectorAll('[data-scroll]').forEach(el => {
   el.addEventListener('click', () => {
     document.getElementById(el.dataset.scroll)?.scrollIntoView({ behavior: 'smooth' });
@@ -975,7 +924,6 @@ document.getElementById('navToggleBtn').addEventListener('click', () => {
   document.getElementById('landMobileMenu').classList.toggle('open');
 });
 
-// Landing hero typed animation
 const landTypedEl = document.getElementById('landTyped');
 const landPhrases = ['anything.', 'code.', 'research.', 'ideas.', 'your work.'];
 let landPhraseIdx = 0;
@@ -994,7 +942,6 @@ function typeLandPhrase() {
 }
 typeLandPhrase();
 
-// Demo tool tabs
 const demoLabels = { chat: 'world · Chat', code: 'world · Code', vision: 'world · Files', docs: 'world · Documents' };
 document.querySelectorAll('#demoTabBar .tabBtn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1008,21 +955,17 @@ document.querySelectorAll('#demoTabBar .tabBtn').forEach(btn => {
   });
 });
 
-// ======================================================================
-// CHAT APP — initialised on first entry into the app view
-// ======================================================================
+/* APP LOGIC */
 let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError, authSubmitBtn,
     authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
     sidebarEl, chatListEl, projectChipsEl, searchInput, searchWrap, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle,
     chatTitleEl, exportBtn, topMenuBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
-    attachBtn, fileInput, searchModeBtn, codeModeBtn;
+    attachBtn, fileInput, floatSearchBtn, floatCodeBtn, floatShotBtn;
 
 let isSignup = false;
 let isLoggedIn = false;
 let chats = [];
 
-/* Consistent stroke-icon set (matches the brand mark style) — used instead of emoji
-   so icons render identically across every OS/browser, regardless of emoji font support. */
 const ICONS = {
   speakerOn: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19.5 5.5a9 9 0 0 1 0 13"/></svg>',
   speakerOff: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 5V4L8 9H4z"/><line x1="17" y1="9" x2="23" y2="15"/><line x1="23" y1="9" x2="17" y2="15"/></svg>',
@@ -1030,7 +973,6 @@ const ICONS = {
   sun: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="12" x2="1.5" y2="12"/><line x1="22.5" y1="12" x2="20" y2="12"/><line x1="4.9" y1="4.9" x2="6.5" y2="6.5"/><line x1="17.5" y1="17.5" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.5" y2="17.5"/><line x1="17.5" y1="6.5" x2="19.1" y2="4.9"/></svg>',
   lock: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
   logout: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
-  download: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7 11 12 16 17 11"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>',
   user: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
   paperclip: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.5 12.4 20.5a5 5 0 0 1-7.1-7.1l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-2.8-2.8l8.2-8.2"/></svg>',
   camera: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2.5h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="14" r="3.5"/></svg>',
@@ -1045,7 +987,7 @@ const ICONS = {
   archive: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/><line x1="10" y1="13" x2="14" y2="13"/></svg>',
   trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 20 7"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M7 7l1 12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-12"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
   pencil: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><line x1="14" y1="7" x2="17" y2="10"/></svg>',
-  downloadSmall: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><polyline points="7.5 10 12 14.5 16.5 10"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>',
+  downloadSmall: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><polyline points="7.5 10 12 14.5 16.5 10"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>'
 };
 
 let projects = [];
@@ -1099,11 +1041,14 @@ function initApp() {
   statusEl = document.getElementById('status');
   attachBtn = document.getElementById('attachBtn');
   fileInput = document.getElementById('fileInput');
-  searchModeBtn = document.getElementById('searchModeBtn');
-  codeModeBtn = document.getElementById('codeModeBtn');
 
-  searchModeBtn.addEventListener('click', () => setMode('search'));
-  codeModeBtn.addEventListener('click', () => setMode('code'));
+  floatSearchBtn = document.getElementById('floatSearchBtn');
+  floatCodeBtn = document.getElementById('floatCodeBtn');
+  floatShotBtn = document.getElementById('floatShotBtn');
+
+  floatSearchBtn.addEventListener('click', () => setMode('search'));
+  floatCodeBtn.addEventListener('click', () => setMode('code'));
+  floatShotBtn.addEventListener('click', () => captureScreenshot());
 
   authCloseBtn.addEventListener('click', closeAuth);
   authActionBtn.addEventListener('click', () => authActionBtn.onclick ? null : openAuth());
@@ -1125,7 +1070,7 @@ function initApp() {
   authSubmitBtn.addEventListener('click', async () => {
     const username = authUsername.value.trim();
     const password = authPassword.value;
-    if (!username || !password) { authError.textContent = 'Please fill in both username and password.'; return; }
+    if (!username || !password) { authError.textContent = 'Please fill username and password.'; return; }
     const fd = new FormData();
     fd.append('username', username);
     fd.append('password', password);
@@ -1141,8 +1086,6 @@ function initApp() {
 
   ttsBtn.addEventListener('click', () => applyTts(localStorage.getItem('jarvis_tts') === 'on' ? 'off' : 'on'));
   applyTts(localStorage.getItem('jarvis_tts') || 'on');
-
-  initNetSpeed();
 
   menuToggle.addEventListener('click', () => sidebarEl.classList.toggle('open'));
   searchInput.addEventListener('input', () => renderSidebar(searchInput.value));
@@ -1181,10 +1124,7 @@ function initApp() {
     URL.revokeObjectURL(url);
   });
 
-  topMenuBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    openTopChatMenu(topMenuBtn);
-  });
+  topMenuBtn.addEventListener('click', (e) => { e.stopPropagation(); openTopChatMenu(topMenuBtn); });
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SpeechRecognition) {
@@ -1192,16 +1132,15 @@ function initApp() {
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = 'hi-IN';
-    recognition.onstart = () => { recognizing = true; micBtn.classList.add('active'); statusEl.textContent = '🎙️ Sun raha hoon...'; };
-    recognition.onend = () => { recognizing = false; micBtn.classList.remove('active'); setIdleStatus(); };
+    recognition.onstart = () => { recognizing = true; micBtn.classList.add('active'); };
+    recognition.onend = () => { recognizing = false; micBtn.classList.remove('active'); };
     recognition.onresult = (event) => sendMessage(event.results[0][0].transcript);
     micBtn.addEventListener('click', () => { if (recognizing) { recognition.stop(); return; } recognition.start(); });
   } else {
     micBtn.disabled = true;
-    micBtn.title = 'This browser does not support voice input (try Chrome)';
+    micBtn.title = 'Voice input not supported in this browser';
   }
 
-  // typed phrase animation (app hero)
   const typedPhraseEl = document.getElementById('typedPhrase');
   const heroPhrases = ['anything.', 'code.', 'research.', 'ideas.', 'your work.'];
   let phraseIdx = 0;
@@ -1229,8 +1168,8 @@ function initApp() {
 
 function setMode(newMode) {
   activeMode = (activeMode === newMode) ? 'none' : newMode;
-  searchModeBtn.classList.toggle('active', activeMode === 'search');
-  codeModeBtn.classList.toggle('active', activeMode === 'code');
+  floatSearchBtn.classList.toggle('active', activeMode === 'search');
+  floatCodeBtn.classList.toggle('active', activeMode === 'code');
 }
 
 function openAttachMenu() {
@@ -1240,12 +1179,12 @@ function openAttachMenu() {
 
   const items = [
     { icon: ICONS.paperclip, label: 'Add files or photos', action: () => fileInput.click() },
-    { icon: ICONS.camera, label: 'Take a screenshot', action: () => captureScreenshot() },
+    { icon: ICONS.camera, label: 'Take screenshot', action: () => captureScreenshot() },
     { divider: true },
     { icon: ICONS.puzzle, label: 'Skills', action: (rect) => openSkillsMenu(rect) },
     { divider: true },
     { icon: ICONS.globe, label: 'Web search', checked: activeMode === 'search', action: () => setMode('search') },
-    { icon: ICONS.terminal, label: 'Run Code', checked: activeMode === 'code', action: () => setMode('code') },
+    { icon: ICONS.terminal, label: 'Run Code', checked: activeMode === 'code', action: () => setMode('code') }
   ];
   items.forEach(item => {
     if (item.divider) {
@@ -1278,8 +1217,7 @@ function openAttachMenu() {
 
 async function captureScreenshot() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-    statusEl.textContent = '⚠️ Screenshot not supported on this device';
-    setTimeout(() => { setIdleStatus(); }, 3000);
+    alert('Screenshot capture not supported on this device/browser.');
     return;
   }
   try {
@@ -1288,7 +1226,7 @@ async function captureScreenshot() {
     const video = document.createElement('video');
     video.srcObject = stream;
     await video.play();
-    await new Promise(res => setTimeout(res, 200)); // frame stabilize hone do
+    await new Promise(res => setTimeout(res, 200));
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -1301,7 +1239,7 @@ async function captureScreenshot() {
       renderFileChips();
     }, 'image/png');
   } catch (err) {
-    console.warn('Screenshot cancelled or not supported:', err);
+    console.warn('Screenshot dismissed:', err);
   }
 }
 
@@ -1316,30 +1254,19 @@ function openSkillsMenu(rect) {
     empty.style.color = 'var(--muted)';
     empty.innerHTML = `<span class="ico">${ICONS.puzzle}</span><span>No skills saved yet</span>`;
     menu.appendChild(empty);
-    const div = document.createElement('div');
-    div.className = 'chatMenuDivider';
-    menu.appendChild(div);
   } else {
     skills.forEach(s => {
       const row = document.createElement('div');
       row.className = 'chatMenuItem';
       row.innerHTML = `<span class="ico">${ICONS.puzzle}</span><span>${s.name.replace(/</g, '&lt;')}</span>`;
       row.addEventListener('click', (e) => { e.stopPropagation(); closeChatMenus(); useSkill(s); });
-      const delBtn = document.createElement('span');
-      delBtn.textContent = '✕'; delBtn.style.marginLeft = 'auto'; delBtn.style.opacity = '0.5'; delBtn.style.padding = '0 2px';
-      delBtn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        await fetch(`/api/skills/${s.id}`, { method: 'DELETE' });
-        skills = skills.filter(x => x.id !== s.id);
-        closeChatMenus();
-      });
-      row.appendChild(delBtn);
       menu.appendChild(row);
     });
-    const div = document.createElement('div');
-    div.className = 'chatMenuDivider';
-    menu.appendChild(div);
   }
+
+  const div = document.createElement('div');
+  div.className = 'chatMenuDivider';
+  menu.appendChild(div);
 
   const newRow = document.createElement('div');
   newRow.className = 'chatMenuItem';
@@ -1362,9 +1289,9 @@ function useSkill(s) {
 }
 
 function createSkillPrompt() {
-  const name = prompt('Skill ka naam (jaise "Code Review", "Email Draft"):');
+  const name = prompt('Skill Name (e.g. Code Review, Translation):');
   if (!name) return;
-  const promptText = prompt('Is skill ke liye instruction/prompt likho:');
+  const promptText = prompt('Skill prompt/instruction:');
   if (!promptText) return;
   const fd = new FormData(); fd.append('name', name); fd.append('prompt', promptText);
   fetch('/api/skills', { method: 'POST', body: fd }).then(r => r.json()).then(s => { skills.push(s); });
@@ -1452,116 +1379,12 @@ async function loadSkills() {
   skills = res.ok ? await res.json() : [];
 }
 
-/* ---- Net speed indicator (topbar "Ready" slot) — mobile status-bar style ---- */
-let netSpeedMbps = null;
-let netEffectiveType = null;
-
-function getConnectionInfo() {
-  return navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
-}
-
-function formatNetStatus() {
-  if (netSpeedMbps == null) return '📶 --';
-  let icon = '📶';
-  if (netSpeedMbps < 0.5) icon = '🐢';
-  else if (netSpeedMbps < 2) icon = '📶';
-  else icon = '📶';
-  const typeLabel = netEffectiveType ? netEffectiveType.toUpperCase() + ' · ' : '';
-  const speedLabel = netSpeedMbps >= 10 ? Math.round(netSpeedMbps) : netSpeedMbps.toFixed(1);
-  return `${icon} ${typeLabel}${speedLabel} Mbps`;
-}
-
-// Idle state ab "🟢 Ready" ki jagah net speed dikhata hai, jaise mobile ke status bar mein hota hai.
-function setIdleStatus() {
-  if (statusEl) statusEl.textContent = formatNetStatus();
-}
-
-function readConnectionApiSpeed() {
-  const conn = getConnectionInfo();
-  if (conn && typeof conn.downlink === 'number') {
-    netSpeedMbps = conn.downlink;
-    netEffectiveType = conn.effectiveType || '';
-    return true;
-  }
-  return false;
-}
-
-// Browsers jo Network Information API support nahi karte (Safari/Firefox), unke liye
-// halka sa ping-test karke latency se speed estimate karte hain.
-async function pingNetSpeedFallback() {
-  if (readConnectionApiSpeed()) return;
-  try {
-    const start = performance.now();
-    await fetch('/health', { cache: 'no-store' });
-    const ms = performance.now() - start;
-    if (ms < 150) { netSpeedMbps = 20; netEffectiveType = '4g'; }
-    else if (ms < 400) { netSpeedMbps = 5; netEffectiveType = '3g'; }
-    else if (ms < 900) { netSpeedMbps = 1.5; netEffectiveType = '2g'; }
-    else { netSpeedMbps = 0.3; netEffectiveType = 'slow-2g'; }
-  } catch (e) {
-    netSpeedMbps = null;
-    netEffectiveType = null;
-  }
-}
-
-async function refreshNetSpeed() {
-  await pingNetSpeedFallback();
-  // Sirf idle state mein hi update karo, "Soch raha hoon..." jaise messages ko override na karo.
-  if (!isGenerating && !recognizing) setIdleStatus();
-}
-
-function initNetSpeed() {
-  const conn = getConnectionInfo();
-  if (conn && conn.addEventListener) {
-    conn.addEventListener('change', () => { readConnectionApiSpeed(); if (!isGenerating && !recognizing) setIdleStatus(); });
-  }
-  refreshNetSpeed();
-  setInterval(refreshNetSpeed, 15000);
-}
-
 function closeChatMenus() {
   document.querySelectorAll('.chatMenuDropdown').forEach(el => el.remove());
-  document.querySelectorAll('.chatMenuBtn.open').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.chatMenuBtn.open, #topMenuBtn.open').forEach(el => el.classList.remove('open'));
 }
 document.addEventListener('click', closeChatMenus);
 
-function openChatMenu(btn, c) {
-  closeChatMenus();
-  btn.classList.add('open');
-  const menu = document.createElement('div');
-  menu.className = 'chatMenuDropdown';
-
-  const items = [
-    { icon: ICONS.pin, label: c.pinned ? 'Unpin' : 'Pin', action: () => togglePin(c) },
-    { icon: ICONS.folder, label: 'Add to project', action: (rect) => openProjectMenu(rect, c) },
-    { icon: ICONS.pencil, label: 'Rename', action: () => renameChatPrompt(c) },
-    { icon: ICONS.downloadSmall, label: 'Download', action: () => downloadChat(c) },
-    { icon: ICONS.trash, label: 'Delete', danger: true, action: () => deleteChatConfirm(c) },
-  ];
-  items.forEach(item => {
-    const row = document.createElement('div');
-    row.className = 'chatMenuItem' + (item.danger ? ' danger' : '');
-    row.innerHTML = `<span class="ico">${item.icon}</span><span>${item.label}</span>`;
-    row.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const rect = row.getBoundingClientRect();
-      closeChatMenus();
-      item.action(rect);
-    });
-    menu.appendChild(row);
-  });
-
-  document.body.appendChild(menu);
-  const r = btn.getBoundingClientRect();
-  const menuW = menu.offsetWidth, menuH = menu.offsetHeight;
-  let left = r.left, top = r.bottom + 4;
-  if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
-  if (top + menuH > window.innerHeight - 8) top = r.top - menuH - 4;
-  menu.style.left = left + 'px';
-  menu.style.top = top + 'px';
-}
-
-/* ---- Topbar ⋮ menu (current open chat): View files / Pin / Archive / Delete ---- */
 function openTopChatMenu(btn) {
   closeChatMenus();
   const chatIdForMenu = activeChatId || guestChatId;
@@ -1573,7 +1396,7 @@ function openTopChatMenu(btn) {
     const empty = document.createElement('div');
     empty.className = 'chatMenuItem';
     empty.style.color = 'var(--muted)';
-    empty.textContent = 'Pehle ek message bhejo, phir yahan options aayenge.';
+    empty.textContent = 'Pehle message bhejo.';
     menu.appendChild(empty);
     document.body.appendChild(menu);
     positionMenuFromButton(menu, btn);
@@ -1584,20 +1407,15 @@ function openTopChatMenu(btn) {
   const needsLogin = !isLoggedIn;
 
   const items = [
-    { icon: ICONS.folder, label: 'View files in chat', action: () => showChatFilesMenu(btn, chatIdForMenu) },
     { icon: ICONS.pin, label: c.pinned ? 'Unpin chat' : 'Pin chat', action: () => needsLogin ? alertLoginNeeded() : togglePin(c) },
     { icon: ICONS.archive, label: 'Archive', action: () => needsLogin ? alertLoginNeeded() : archiveChatConfirm(c) },
-    { icon: ICONS.trash, label: 'Delete', danger: true, action: () => needsLogin ? alertLoginNeeded() : deleteChatConfirm(c) },
+    { icon: ICONS.trash, label: 'Delete', danger: true, action: () => needsLogin ? alertLoginNeeded() : deleteChatConfirm(c) }
   ];
   items.forEach(item => {
     const row = document.createElement('div');
     row.className = 'chatMenuItem' + (item.danger ? ' danger' : '');
     row.innerHTML = `<span class="ico">${item.icon}</span><span>${item.label}</span>`;
-    row.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeChatMenus();
-      item.action();
-    });
+    row.addEventListener('click', (e) => { e.stopPropagation(); closeChatMenus(); item.action(); });
     menu.appendChild(row);
   });
 
@@ -1606,7 +1424,7 @@ function openTopChatMenu(btn) {
 }
 
 function alertLoginNeeded() {
-  alert('Ye feature sirf logged-in users ke liye available hai. Pehle login/sign up karo.');
+  alert('Ye feature logged-in users ke liye available hai.');
 }
 
 function positionMenuFromButton(menu, btn) {
@@ -1620,52 +1438,8 @@ function positionMenuFromButton(menu, btn) {
   menu.style.top = top + 'px';
 }
 
-async function showChatFilesMenu(btn, chatIdForMenu) {
-  const menu = document.createElement('div');
-  menu.className = 'chatMenuDropdown';
-  menu.style.minWidth = '220px';
-  const loadingRow = document.createElement('div');
-  loadingRow.className = 'chatMenuItem';
-  loadingRow.style.color = 'var(--muted)';
-  loadingRow.textContent = 'Loading...';
-  menu.appendChild(loadingRow);
-  document.body.appendChild(menu);
-  positionMenuFromButton(menu, btn);
-
-  // Logged-in: server se poora history mil jaata hai. Guest: sirf isi session mein
-  // is browser tab se bheji gayi files (server par guest history persist nahi hoti).
-  let files = (chatFilesMap[chatIdForMenu] || []).slice();
-  if (isLoggedIn) {
-    try {
-      const res = await fetch(`/api/chats/${chatIdForMenu}/messages`);
-      if (res.ok) {
-        const msgs = await res.json();
-        files = [];
-        msgs.forEach(m => (m.files || []).forEach(fn => files.push(fn)));
-      }
-    } catch (e) { /* ignore, fall back to client-side list */ }
-  }
-
-  menu.innerHTML = '';
-  if (!files.length) {
-    const empty = document.createElement('div');
-    empty.className = 'chatMenuItem';
-    empty.style.color = 'var(--muted)';
-    empty.textContent = 'Is chat mein koi file attach nahi hai.';
-    menu.appendChild(empty);
-  } else {
-    files.forEach(fn => {
-      const row = document.createElement('div');
-      row.className = 'chatMenuItem';
-      row.innerHTML = `<span class="ico">${ICONS.file}</span><span>${fn.replace(/</g, '&lt;')}</span>`;
-      menu.appendChild(row);
-    });
-  }
-  positionMenuFromButton(menu, btn);
-}
-
 async function archiveChatConfirm(c) {
-  if (!confirm('Ye chat archive karni hai? Ye sidebar list se hat jayegi.')) return;
+  if (!confirm('Chat archive karni hai?')) return;
   const res = await fetch(`/api/chats/${c.id}/archive`, { method: 'POST' });
   if (res.ok) {
     if (activeChatId === c.id) { activeChatId = null; showHero(); }
@@ -1676,84 +1450,6 @@ async function archiveChatConfirm(c) {
 async function togglePin(c) {
   const res = await fetch(`/api/chats/${c.id}/pin`, { method: 'POST' });
   if (res.ok) { const data = await res.json(); c.pinned = data.pinned; await loadChats(); }
-}
-
-function openProjectMenu(rect, c) {
-  closeChatMenus();
-  const menu = document.createElement('div');
-  menu.className = 'chatMenuDropdown';
-
-  const items = [
-    { icon: ICONS.noProject, label: 'No project', checked: !c.project_id, action: () => assignChatProject(c, null) },
-    ...projects.map(p => ({
-      icon: ICONS.folder, label: p.name, checked: c.project_id === p.id, action: () => assignChatProject(c, p.id),
-    })),
-    { divider: true },
-    { icon: ICONS.plusSmall, label: 'New project', action: () => createProjectPrompt(c) },
-  ];
-  items.forEach(item => {
-    if (item.divider) {
-      const div = document.createElement('div');
-      div.className = 'chatMenuDivider';
-      menu.appendChild(div);
-      return;
-    }
-    const row = document.createElement('div');
-    row.className = 'chatMenuItem' + (item.checked ? ' checked' : '');
-    row.innerHTML = `<span class="ico">${item.icon}</span><span>${item.label}</span><span class="check">✓</span>`;
-    row.addEventListener('click', (e) => { e.stopPropagation(); closeChatMenus(); item.action(); });
-    menu.appendChild(row);
-  });
-
-  document.body.appendChild(menu);
-  const menuW = menu.offsetWidth, menuH = menu.offsetHeight;
-  let left = rect.left, top = rect.bottom + 4;
-  if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
-  if (top + menuH > window.innerHeight - 8) top = rect.top - menuH - 4;
-  menu.style.left = left + 'px';
-  menu.style.top = top + 'px';
-}
-
-async function assignChatProject(c, projectId) {
-  const fd = new FormData();
-  if (projectId) fd.append('project_id', projectId);
-  await fetch(`/api/chats/${c.id}/project`, { method: 'POST', body: fd });
-  c.project_id = projectId;
-  renderSidebar(searchInput.value);
-}
-
-function createProjectPrompt(c) {
-  const name = prompt('Naye project ka naam:');
-  if (!name) return;
-  const fd = new FormData(); fd.append('name', name);
-  fetch('/api/projects', { method: 'POST', body: fd }).then(r => r.json()).then(async (p) => {
-    projects.push(p);
-    if (c) await assignChatProject(c, p.id);
-    renderSidebar(searchInput.value);
-  });
-}
-
-function renameChatPrompt(c) {
-  const newTitle = prompt('Naya naam:', c.title);
-  if (!newTitle) return;
-  const fd = new FormData(); fd.append('title', newTitle);
-  fetch(`/api/chats/${c.id}`, { method: 'PUT', body: fd }).then(() => {
-    c.title = newTitle;
-    renderSidebar(searchInput.value);
-    if (c.id === activeChatId) chatTitleEl.textContent = newTitle;
-  });
-}
-
-async function downloadChat(c) {
-  const res = await fetch(`/api/chats/${c.id}/messages`);
-  const msgs = res.ok ? await res.json() : [];
-  const text = msgs.map(m => `${m.role === 'user' ? 'You' : 'World AI'}: ${m.text}`).join('\n\n');
-  const blob = new Blob([text], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `${c.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 function deleteChatConfirm(c) {
@@ -1769,29 +1465,8 @@ function renderSidebar(filter = '') {
   chatListEl.innerHTML = '';
   const f = filter.trim().toLowerCase();
 
-  // Project filter chips
-  if (projects.length > 0) {
-    projectChipsEl.style.display = 'flex';
-    projectChipsEl.innerHTML = '';
-    const allChip = document.createElement('div');
-    allChip.className = 'projectChip' + (activeProjectFilter === null ? ' active' : '');
-    allChip.textContent = 'All';
-    allChip.addEventListener('click', () => { activeProjectFilter = null; renderSidebar(searchInput.value); });
-    projectChipsEl.appendChild(allChip);
-    projects.forEach(p => {
-      const chip = document.createElement('div');
-      chip.className = 'projectChip' + (activeProjectFilter === p.id ? ' active' : '');
-      chip.textContent = '📁 ' + p.name;
-      chip.addEventListener('click', () => { activeProjectFilter = p.id; renderSidebar(searchInput.value); });
-      projectChipsEl.appendChild(chip);
-    });
-  } else {
-    projectChipsEl.style.display = 'none';
-  }
-
   chats
     .filter(c => !f || c.title.toLowerCase().includes(f))
-    .filter(c => activeProjectFilter === null || c.project_id === activeProjectFilter)
     .forEach(c => {
     const row = document.createElement('div');
     row.className = 'chatRow' + (c.id === activeChatId ? ' active' : '');
@@ -1800,11 +1475,7 @@ function renderSidebar(filter = '') {
     title.innerHTML = (c.pinned ? '<span class="pinIcon">📌</span>' : '') + c.title.replace(/</g, '&lt;');
     title.addEventListener('click', () => selectChat(c.id));
 
-    const menuBtn = document.createElement('button');
-    menuBtn.className = 'chatMenuBtn'; menuBtn.textContent = '⋮';
-    menuBtn.addEventListener('click', (e) => { e.stopPropagation(); openChatMenu(menuBtn, c); });
-
-    row.appendChild(title); row.appendChild(menuBtn);
+    row.appendChild(title);
     chatListEl.appendChild(row);
   });
 }
@@ -1846,7 +1517,6 @@ function renderMarkdown(text) {
   return DOMPurify.sanitize(raw);
 }
 
-/* addBubble/addTypingBubble: plain bubbles, no avatar icon. */
 function addBubble(text, isUser) {
   const row = document.createElement('div');
   row.className = 'msgRow ' + (isUser ? 'user' : 'ai');
@@ -1897,27 +1567,43 @@ function renderFilePreview(p) {
     html += '</table>';
   }
   card.innerHTML = html;
-  if (p.chart && p.chart.values && p.chart.values.length) {
-    const canvas = document.createElement('canvas');
-    card.appendChild(canvas);
-    chatEl.appendChild(card);
-    new Chart(canvas, {
-      type: 'bar',
-      data: { labels: p.chart.values.map((_, i) => i + 1), datasets: [{ label: p.chart.label, data: p.chart.values, backgroundColor: '#7c6ee6' }] },
-      options: { plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
-    });
-  } else {
-    chatEl.appendChild(card);
-  }
+  chatEl.appendChild(card);
   chatEl.scrollTop = chatEl.scrollHeight;
 }
 
+/* Natural Human-Like Voice TTS */
 function speak(text) {
   if (localStorage.getItem('jarvis_tts') === 'off') return;
   if (!('speechSynthesis' in window)) return;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = 1.0;
+
+  window.speechSynthesis.cancel();
+
+  const clean = text
+    .replace(/```[\s\S]*?```/g, 'Code block')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/[*#_~>]/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .trim();
+
+  if (!clean) return;
+
+  const utter = new SpeechSynthesisUtterance(clean.slice(0, 320));
+  const voices = window.speechSynthesis.getVoices();
+
+  const naturalVoice = voices.find(v => 
+    (v.lang.includes('hi') || v.lang.includes('IN')) && 
+    (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Neural'))
+  ) || voices.find(v => v.lang.includes('hi'))
+    || voices.find(v => v.name.includes('Natural') || v.name.includes('Google'));
+
+  if (naturalVoice) utter.voice = naturalVoice;
+  utter.rate = 0.95;
+  utter.pitch = 1.0;
   window.speechSynthesis.speak(utter);
+}
+
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
 }
 
 function renderFileChips() {
@@ -1961,14 +1647,10 @@ async function sendMessage(text) {
   renderFileChips();
 
   const chatId = await ensureActiveChat();
-  if (filesToSend.length) {
-    chatFilesMap[chatId] = (chatFilesMap[chatId] || []).concat(filesToSend.map(f => f.name));
-  }
   showChatView();
   addBubble(displayText, true);
 
   const aiBodyEl = addTypingBubble();
-  statusEl.textContent = modeToSend === 'search' ? '🌐 Search kar raha hoon...' : modeToSend === 'code' ? '💻 Code chala raha hoon...' : '🧠 Soch raha hoon...';
   setGenerating(true);
   currentController = new AbortController();
 
@@ -2009,7 +1691,6 @@ async function sendMessage(text) {
           aiBodyEl.classList.remove('typingDots');
           aiBodyEl.textContent = '⚠️ ' + payload.error;
         } else if (payload.done) {
-          setIdleStatus();
           if (finalText.trim()) speak(finalText);
         }
       }
@@ -2020,18 +1701,16 @@ async function sendMessage(text) {
     }
   } catch (err) {
     if (err.name === 'AbortError') {
-      setIdleStatus();
       aiBodyEl.classList.remove('typingDots');
       if (!finalText) aiBodyEl.textContent = '⏹️ Rok diya gaya.';
     } else {
       aiBodyEl.textContent = '⚠️ Network error: ' + err.message;
     }
   } finally {
-    setGenerating(false);
+    setGenerating(false);A
     currentController = null;
   }
 }
 </script>
-
 </body>
 </html>
