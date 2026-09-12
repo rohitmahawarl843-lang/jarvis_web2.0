@@ -430,6 +430,30 @@
     color: white; font-weight: 600; cursor: pointer; font-size: 14px; box-shadow: 0 8px 24px rgba(124,110,230,0.35);
   }
   .modalSavedMsg { color: #34d399; font-size: 12.5px; text-align: center; min-height: 14px; }
+
+  /* ---- Language modal (Settings > Language) ---- */
+  .langModalBox { width: 640px; max-width: 92vw; align-items: stretch; gap: 4px; }
+  .langModalBox h2.langModalTitle {
+    text-align: left; font-family: var(--font-sans); font-weight: 600; font-size: 19px;
+    background: none; -webkit-background-clip: initial; background-clip: initial;
+    color: var(--text); margin: 0 0 16px 0; padding-right: 24px;
+  }
+  #langGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 20px; max-height: 62vh; overflow-y: auto; }
+  .langOption {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 10px 8px; border-radius: 10px; cursor: pointer; transition: background 0.12s;
+  }
+  .langOption:hover { background: var(--hover); }
+  .langOption .langNames { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .langOption .langNative { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.25; }
+  .langOption.selected .langNative { color: var(--accent); }
+  .langOption .langEnglish { font-size: 12px; color: var(--muted); line-height: 1.25; }
+  .langOption .langCheck { color: var(--accent); flex-shrink: 0; display: none; }
+  .langOption.selected .langCheck { display: flex; }
+  @media (max-width: 640px) {
+    .langModalBox { width: 100%; }
+    #langGrid { grid-template-columns: 1fr; }
+  }
   #avatarUploadWrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 4px; }
   #avatarPreview {
     width: 72px; height: 72px; border-radius: 50%; background: var(--panel); border: 1px solid var(--border);
@@ -919,6 +943,14 @@ for item in items:
     </div>
   </div>
 
+  <div id="langOverlay" class="modalOverlay">
+    <div class="modalBox langModalBox" id="langBox">
+      <button class="modalCloseBtn" id="langCloseBtn">✕</button>
+      <h2 class="langModalTitle">Choose your language</h2>
+      <div id="langGrid"></div>
+    </div>
+  </div>
+
   <div id="comingSoonToast"></div>
 
   <div id="sidebar">
@@ -1099,7 +1131,8 @@ let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError,
     chatTitleEl, exportBtn, topMenuBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
     attachBtn, fileInput, searchModeBtn, codeModeBtn,
     profileOverlay, profileCloseBtn, avatarPreview, avatarInput, avatarUploadBtn,
-    profileNameInput, profileEmailInput, profileSavedMsg, profileSaveBtn, comingSoonToast;
+    profileNameInput, profileEmailInput, profileSavedMsg, profileSaveBtn, comingSoonToast,
+    langOverlay, langCloseBtn, langGrid;
 
 let isSignup = false;
 let isLoggedIn = false;
@@ -1134,7 +1167,51 @@ const ICONS = {
   gear: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V19.6a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.04-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.04H4.4a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.04 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1.04-1.56V4.4a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.04 1.56h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.56 1.04h.09a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.04z"/></svg>',
   help: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.3 1.1-1.3 1.9v.3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   chevronDown: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+  check: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
 };
+
+/* ---- Reply language options (Settings > Language) ---- */
+const LANGUAGES = [
+  { code: 'auto', native: 'Auto-detect', english: 'Reply in whichever language you write' },
+  { code: 'en', native: 'English (United States)', english: 'English (United States)' },
+  { code: 'fr', native: 'Français (France)', english: 'French (France)' },
+  { code: 'de', native: 'Deutsch (Deutschland)', english: 'German (Germany)' },
+  { code: 'hi', native: 'हिन्दी (भारत)', english: 'Hindi (India)' },
+  { code: 'id', native: 'Indonesia (Indonesia)', english: 'Indonesian (Indonesia)' },
+  { code: 'it', native: 'Italiano (Italia)', english: 'Italian (Italy)' },
+  { code: 'ja', native: '日本語 (日本)', english: 'Japanese (Japan)' },
+  { code: 'ko', native: '한국어(대한민국)', english: 'Korean (South Korea)' },
+  { code: 'pt', native: 'Português (Brasil)', english: 'Portuguese (Brazil)' },
+  { code: 'es-lat', native: 'Español (Latinoamérica)', english: 'Spanish (Latin America)' },
+  { code: 'es-es', native: 'Español (España)', english: 'Spanish (Spain)' },
+  { code: 'hinglish', native: 'Hinglish', english: 'Mixed Hindi-English (Roman script)' },
+];
+let selectedLanguage = localStorage.getItem('jarvis_language') || 'auto';
+
+function openLanguageModal() {
+  selectedLanguage = localStorage.getItem('jarvis_language') || 'auto';
+  renderLanguageOptions();
+  langOverlay.classList.add('open');
+}
+function closeLanguageModal() { langOverlay.classList.remove('open'); }
+
+function renderLanguageOptions() {
+  langGrid.innerHTML = '';
+  LANGUAGES.forEach(l => {
+    const opt = document.createElement('div');
+    opt.className = 'langOption' + (l.code === selectedLanguage ? ' selected' : '');
+    opt.innerHTML =
+      `<span class="langNames"><span class="langNative">${l.native}</span><span class="langEnglish">${l.english}</span></span>` +
+      `<span class="langCheck">${ICONS.check}</span>`;
+    opt.addEventListener('click', () => {
+      selectedLanguage = l.code;
+      localStorage.setItem('jarvis_language', l.code);
+      renderLanguageOptions();
+      setTimeout(closeLanguageModal, 200);
+    });
+    langGrid.appendChild(opt);
+  });
+}
 
 let projects = [];
 let skills = [];
@@ -1201,8 +1278,14 @@ function initApp() {
   profileSaveBtn = document.getElementById('profileSaveBtn');
   comingSoonToast = document.getElementById('comingSoonToast');
 
+  langOverlay = document.getElementById('langOverlay');
+  langCloseBtn = document.getElementById('langCloseBtn');
+  langGrid = document.getElementById('langGrid');
+
   userLabel.addEventListener('click', (e) => { if (isLoggedIn) { e.stopPropagation(); openAccountMenu(); } });
   profileCloseBtn.addEventListener('click', closeProfileModal);
+  langCloseBtn.addEventListener('click', closeLanguageModal);
+  langOverlay.addEventListener('click', (e) => { if (e.target === langOverlay) closeLanguageModal(); });
   avatarPreview.addEventListener('click', () => avatarInput.click());
   avatarUploadBtn.addEventListener('click', () => avatarInput.click());
   avatarInput.addEventListener('change', (e) => {
@@ -1590,6 +1673,11 @@ function openSettingsSubmenu(rect) {
   closeChatMenus();
   const menu = document.createElement('div');
   menu.className = 'chatMenuDropdown';
+  const langRow = document.createElement('div');
+  langRow.className = 'chatMenuItem';
+  langRow.innerHTML = `<span class="ico">${ICONS.globe}</span><span>Language</span>`;
+  langRow.addEventListener('click', (e) => { e.stopPropagation(); closeChatMenus(); openLanguageModal(); });
+  menu.appendChild(langRow);
   const row = document.createElement('div');
   row.className = 'chatMenuItem danger';
   row.innerHTML = `<span class="ico">${ICONS.logout}</span><span>Logout</span>`;
@@ -2200,6 +2288,7 @@ async function sendMessage(text) {
   formData.append('message', text);
   formData.append('chat_id', chatId);
   formData.append('mode', modeToSend);
+  formData.append('language', localStorage.getItem('jarvis_language') || 'auto');
   filesToSend.forEach(f => formData.append('files', f));
 
   let finalText = '';
