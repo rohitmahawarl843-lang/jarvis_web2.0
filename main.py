@@ -20,6 +20,10 @@ from datetime import datetime, timezone, timedelta
 from typing import List
 
 # ---------------- Force IPv4 for ALL outbound connections ----------------
+# Railway (aur kai dusre hosts) ka network kabhi IPv6 route try karta hai jo
+# kaam nahi karta, jisse Gemini/Mongo/koi bhi external call 30-60s tak slow
+# ho jaata hai jab tak IPv4 par fallback na ho. Yeh globally IPv4 force
+# karke woh delay hamesha ke liye khatam kar deta hai.
 _orig_getaddrinfo = socket.getaddrinfo
 
 
@@ -48,6 +52,8 @@ except ImportError:
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ---------------- MongoDB (Atlas) ----------------
+# Railway/host par MONGO_URI env variable set karo, jaisa Atlas ne diya tha:
+# mongodb+srv://user:password@cluster0.xxxxx.mongodb.net/
 MONGO_URI = os.environ.get("MONGO_URI", "").strip()
 if not MONGO_URI:
     raise RuntimeError("MONGO_URI environment variable set nahi hai. MongoDB Atlas connection string set karo.")
@@ -58,7 +64,7 @@ try:
     if mongo_db is None:
         raise Exception("no default db in URI")
 except Exception:
-    mongo_db = mongo_client["jarvis"]
+    mongo_db = mongo_client["jarvis"]  # URI mein db name nahi diya, "jarvis" use karo
 
 users_col = mongo_db["users"]
 sessions_col = mongo_db["sessions"]
@@ -68,6 +74,8 @@ skills_col = mongo_db["skills"]
 projects_col = mongo_db["projects"]
 
 # ---------------- Multiple API keys support (multi-provider) ----------------
+# Gemini: GEMINI_API_KEYS="key1,key2,key3" (comma separated) on Railway.
+# GEMINI_API_KEY (single, old variable) still works as a fallback.
 _raw_keys = os.environ.get("GEMINI_API_KEYS", "").strip()
 if _raw_keys:
     API_KEYS = [k.strip() for k in _raw_keys.split(",") if k.strip()]
@@ -76,8 +84,10 @@ else:
     API_KEYS = [single] if single else []
 
 clients = [genai.Client(api_key=k) for k in API_KEYS]
-client = clients[0] if clients else None
+client = clients[0] if clients else None  # kept for /health check compatibility
 
+# OpenAI (ChatGPT): OPENAI_API_KEYS="key1,key2" (comma separated).
+# OPENAI_API_KEY (single) bhi chalega.
 _raw_openai_keys = os.environ.get("OPENAI_API_KEYS", "").strip()
 if _raw_openai_keys:
     OPENAI_KEYS = [k.strip() for k in _raw_openai_keys.split(",") if k.strip()]
@@ -87,6 +97,8 @@ else:
 
 openai_clients = [OpenAI(api_key=k) for k in OPENAI_KEYS] if (OpenAI and OPENAI_KEYS) else []
 
+# Sab providers ek hi list mein — fallback isi list ke round-robin se hota hai.
+# Naya platform add karna ho to bas yahan ek naya entry pattern jod do.
 providers = (
     [{"type": "gemini", "client": c} for c in clients]
     + [{"type": "openai", "client": c} for c in openai_clients]
@@ -103,30 +115,20 @@ def next_start_index(pool_size: int):
         return next(_rr_counter) % pool_size
 
 
-# Standard, fast production models
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
-OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-5-mini")
 DAILY_MESSAGE_LIMIT = int(os.environ.get("DAILY_MESSAGE_LIMIT", "0"))
 
-
-def get_dynamic_system_prompt() -> str:
-    """Current live Indian Standard Time (IST) model ko deta hai taaki date aur time hamesha accurate ho."""
-    ist_time = datetime.now(timezone(timedelta(hours=5, minutes=30)))
-    current_date_str = ist_time.strftime("%A, %d %B %Y, %I:%M %p IST")
-
-    return f"""You are World AI, a fast, friendly, and smart AI assistant.
-Today's exact real-world date and time is: {current_date_str}.
-Always answer questions about date, day, month, year, or current time based on this exact reference.
-
+SYSTEM_PROMPT = """You are World AI, a friendly and helpful AI assistant.
 Always reply in the SAME language the user writes in — if they write in Hindi, reply in Hindi;
-if English, reply in English; if Hinglish (mixed Hindi-English), reply in Hinglish; and so on.
-Match their language naturally, don't force any one language.
-Be helpful, concise, and direct.
-If the user attaches a file (image, video, PDF, spreadsheet, document), carefully inspect
-its content and answer their question properly or provide a clear analysis.
-If the Web Search tool is available, use it for current/real-time info (news, live data, weather).
-If the Code Execution tool is available, run the code to verify output directly."""
-
+if English, reply in English; if Hinglish (mixed Hindi-English), reply in Hinglish; and so on
+for any other language. Match their language naturally, don't force any one language.
+Be helpful and concise.
+If the user attaches a file (image, video, PDF, spreadsheet, document), carefully look at/read
+its content and answer their question properly or give a summary/analysis of the data.
+If the Web Search tool is available, use it for current/real-time info (news, weather, prices).
+If the Code Execution tool is available, actually run the code to verify the result — don't just
+write it without running it."""
 
 guest_sessions = {}
 
@@ -142,7 +144,6 @@ def init_db():
     skills_col.create_index("user_id")
     projects_col.create_index("project_id", unique=True)
     projects_col.create_index("user_id")
-
 
 init_db()
 
@@ -266,6 +267,8 @@ def is_quota_error(err: Exception) -> bool:
 
 
 def contents_to_openai_messages(contents, system_prompt):
+    """Gemini-style `contents` list ko OpenAI ke messages format mein badalta hai.
+    (Sirf text — file attachments/tools OpenAI path mein support nahi hain.)"""
     messages = [{"role": "system", "content": system_prompt}]
     for c in contents:
         role = "user" if c.role == "user" else "assistant"
@@ -277,6 +280,7 @@ def contents_to_openai_messages(contents, system_prompt):
 
 
 def stream_openai_text(openai_client, contents, system_prompt, max_tokens):
+    """OpenAI se streaming text chunks yield karta hai (Gemini stream jaisa hi shape)."""
     messages = contents_to_openai_messages(contents, system_prompt)
     stream = openai_client.chat.completions.create(
         model=OPENAI_MODEL,
@@ -393,13 +397,14 @@ def me(request: Request):
     return {"username": user["username"]}
 
 
-# ---------------- Chat CRUD ----------------
+# ---------------- Chat CRUD (logged-in users only) ----------------
 
 @app.get("/api/chats")
 def list_chats(request: Request):
     user = get_current_user(request)
     if not user:
         return unauth()
+    # Archived chats list mein nahi dikhte (Archive option se hide ho jaate hain).
     rows = chats_col.find({"user_id": user["id"], "archived": {"$ne": True}}).sort([("pinned", -1), ("created_at", -1)])
     return [
         {
@@ -452,7 +457,7 @@ def toggle_archive(chat_id: str, request: Request):
     return {"status": "ok", "archived": new_archived}
 
 
-# ---------------- Skills ----------------
+# ---------------- Skills (saved prompt templates) ----------------
 
 @app.get("/api/skills")
 def list_skills(request: Request):
@@ -489,7 +494,7 @@ def delete_skill(skill_id: str, request: Request):
     return {"status": "deleted"}
 
 
-# ---------------- Projects ----------------
+# ---------------- Projects (chat folders) ----------------
 
 @app.get("/api/projects")
 def list_projects(request: Request):
@@ -669,6 +674,8 @@ async def chat(
         last_err = None
         last_chunk = None
 
+        # File attachments aur tools (search/code) sirf Gemini format mein
+        # support hain — is case mein sirf Gemini keys hi pool mein rakho.
         if tools or file_parts:
             usable_providers = [p for p in providers if p["type"] == "gemini"]
         else:
@@ -684,10 +691,9 @@ async def chat(
                 yield f"data: {json.dumps({'error': 'This feature (file/search/code) currently only works with Gemini, and no Gemini key is configured.'})}\n\n"
                 return
 
-            dynamic_system_prompt = get_dynamic_system_prompt()
             config_kwargs = dict(
-                system_instruction=dynamic_system_prompt,
-                max_output_tokens=1500 if mode == "code" else 1000,
+                system_instruction=SYSTEM_PROMPT,
+                max_output_tokens=1500 if mode == "code" else 800,
                 temperature=0.7,
             )
             if tools:
@@ -711,7 +717,7 @@ async def chat(
                                 yield f"data: {json.dumps({'chunk': piece})}\n\n"
                     else:  # openai
                         for piece in stream_openai_text(
-                            provider["client"], contents, dynamic_system_prompt, config_kwargs["max_output_tokens"]
+                            provider["client"], contents, SYSTEM_PROMPT, config_kwargs["max_output_tokens"]
                         ):
                             full_text += piece
                             yielded_any = True
@@ -723,7 +729,7 @@ async def chat(
                     if is_quota_error(e) and not yielded_any:
                         continue  # try next key/provider
                     else:
-                        break  # real error, or partial output already sent
+                        break  # real error, or partial output already sent — don't retry
 
             if last_err:
                 if is_quota_error(last_err):
