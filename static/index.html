@@ -504,6 +504,7 @@
   #guestBadge { font-size: 11px; background: var(--panel); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; color: var(--muted); font-weight: 500; font-family: var(--font-mono); flex-shrink: 0; }
 
   #hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px; text-align: center; }
+  .heroTopSpacer { height: 28px; flex-shrink: 0; }
   #heroTag {
     display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; border-radius: 20px;
     font-size: 12px; font-weight: 500; font-family: var(--font-mono);
@@ -542,7 +543,7 @@
   .previewCard th, .previewCard td { border: 1px solid var(--border); padding: 4px 6px; text-align: left; }
   .previewCard canvas { max-height: 160px; margin-top: 8px; }
 
-  #fileChips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 15% 8px 15%; }
+  #fileChips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 15% 8px 15%; align-self: stretch; }
   .fileChip { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 5px 10px; font-size: 12px; }
   .fileChip img { width: 22px; height: 22px; object-fit: cover; border-radius: 6px; }
   .fileChip button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; }
@@ -559,7 +560,7 @@
 
   /* Cloud-style circular action buttons in the composer, matching the landing
      page's send button + hero chip hover treatment */
-  #inputWrap { padding: 4px 15% 22px 15%; }
+  #inputWrap { padding: 4px 15% 22px 15%; align-self: stretch; }
   #inputBarOuter { border-radius: 26px; padding: 1.5px; background: linear-gradient(135deg, rgba(124,110,230,0.5), rgba(79,163,227,0.3)); }
   #inputBar { display: flex; align-items: center; gap: 6px; background: var(--card); border-radius: 25px; padding: 8px 8px 8px 16px; }
   #msgInput { flex: 1; border: none; background: transparent; color: var(--text); font-size: 16px; outline: none; padding: 8px 0; font-family: inherit; }
@@ -992,6 +993,7 @@ for item in items:
     </div>
 
     <div id="hero">
+      <div class="heroTopSpacer"></div>
       <div id="heroTag"><span class="dot"></span>World AI 2.0 — now with web search and code execution</div>
       <h1>Ask me <span class="grad cursorBlink" id="typedPhrase">anything.</span></h1>
       <p id="heroSub" style="display:none;">Guest mode — is chat ka data save nahi hoga.</p>
@@ -1129,6 +1131,7 @@ let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError,
     authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
     sidebarEl, chatListEl, projectChipsEl, searchInput, searchWrap, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle, sidebarCollapseBtn,
     chatTitleEl, exportBtn, topMenuBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
+    mainEl, inputWrapEl, heroChipsAppEl,
     attachBtn, fileInput, searchModeBtn, codeModeBtn,
     profileOverlay, profileCloseBtn, avatarPreview, avatarInput, avatarUploadBtn,
     profileNameInput, profileEmailInput, profileSavedMsg, profileSaveBtn, comingSoonToast,
@@ -1266,6 +1269,9 @@ function initApp() {
   fileInput = document.getElementById('fileInput');
   searchModeBtn = document.getElementById('searchModeBtn');
   codeModeBtn = document.getElementById('codeModeBtn');
+  mainEl = document.getElementById('main');
+  inputWrapEl = document.getElementById('inputWrap');
+  heroChipsAppEl = document.getElementById('heroChipsApp');
 
   profileOverlay = document.getElementById('profileOverlay');
   profileCloseBtn = document.getElementById('profileCloseBtn');
@@ -2121,8 +2127,24 @@ function renderSidebar(filter = '') {
   });
 }
 
-function showHero() { heroEl.style.display = 'flex'; chatEl.style.display = 'none'; chatTitleEl.textContent = 'World AI'; }
-function showChatView() { heroEl.style.display = 'none'; chatEl.style.display = 'flex'; }
+function showHero() {
+  heroEl.style.display = 'flex';
+  chatEl.style.display = 'none';
+  chatTitleEl.textContent = 'World AI';
+  // Empty-chat state: move the message composer (and any file chips) up
+  // into the hero block, right above the quick-suggestion chips, so the
+  // layout reads as title -> input -> suggestions, centered on screen.
+  heroChipsAppEl.parentNode.insertBefore(fileChipsEl, heroChipsAppEl);
+  heroChipsAppEl.parentNode.insertBefore(inputWrapEl, heroChipsAppEl);
+}
+function showChatView() {
+  heroEl.style.display = 'none';
+  chatEl.style.display = 'flex';
+  // Active chat: restore the composer to its normal spot pinned below the
+  // message list.
+  mainEl.appendChild(fileChipsEl);
+  mainEl.appendChild(inputWrapEl);
+}
 
 async function selectChat(id) {
   const c = chats.find(x => x.id === id);
