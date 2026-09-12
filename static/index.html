@@ -394,6 +394,60 @@
   .sideIconBtn.on { background: var(--grad); border-color: transparent; color: white; box-shadow: 0 4px 14px rgba(124,110,230,0.3); }
   .sideIconBtn.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(229,72,77,0.08); }
 
+  /* ---- Account menu trigger (Profile / Settings / Help) ---- */
+  #userLabel { cursor: pointer; border-radius: 12px; padding: 6px 8px; justify-content: space-between; transition: background 0.15s; }
+  #userLabel:hover { background: var(--hover); }
+  #userLabel .ulLeft { display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; }
+  #userLabel .ulAvatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--panel); display: flex; align-items: center; justify-content: center; color: var(--muted); overflow: hidden; }
+  #userLabel .ulAvatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #userLabel .ulName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  #userLabel .ulPlan { color: var(--muted); font-weight: 500; }
+  #userLabel .ulChevron { flex-shrink: 0; opacity: 0.7; display: flex; }
+
+  /* ---- Generic modal (Profile, etc.) reusing the auth box look ---- */
+  .modalOverlay {
+    display: none; position: fixed; inset: 0; background: rgba(8,8,15,0.55); z-index: 100;
+    align-items: center; justify-content: center; backdrop-filter: blur(4px);
+  }
+  .modalOverlay.open { display: flex; }
+  .modalBox {
+    width: 320px; background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 28px; display: flex; flex-direction: column; gap: 12px; position: relative;
+    box-shadow: 0 30px 80px rgba(20,10,50,0.25);
+  }
+  .modalCloseBtn { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; }
+  .modalBox h2 {
+    text-align: center; margin: 0 0 6px 0; font-family: var(--font-serif); font-weight: 400; font-size: 26px;
+    background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .modalBox input {
+    padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); font-size: 16px; outline: none; font-family: var(--font-sans);
+  }
+  .modalBox input:focus { border-color: var(--accent); }
+  .modalBox button.primary {
+    padding: 12px; border-radius: 12px; border: none; background: var(--grad);
+    color: white; font-weight: 600; cursor: pointer; font-size: 14px; box-shadow: 0 8px 24px rgba(124,110,230,0.35);
+  }
+  .modalSavedMsg { color: #34d399; font-size: 12.5px; text-align: center; min-height: 14px; }
+  #avatarUploadWrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 4px; }
+  #avatarPreview {
+    width: 72px; height: 72px; border-radius: 50%; background: var(--panel); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; color: var(--muted); overflow: hidden; cursor: pointer;
+  }
+  #avatarPreview img { width: 100%; height: 100%; object-fit: cover; }
+  #avatarUploadBtn { background: none; border: none; color: var(--accent); font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 4px; }
+
+  /* ---- Small "coming soon" toast for not-yet-built features ---- */
+  #comingSoonToast {
+    position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(20px);
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    padding: 12px 20px; border-radius: 14px; font-size: 13px; font-weight: 500;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 300; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  #comingSoonToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
   #main { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
   #topbar {
     display: flex; align-items: center; padding: 14px 22px; border-bottom: 1px solid var(--border);
@@ -849,6 +903,24 @@ for item in items:
     </div>
   </div>
 
+  <div id="profileOverlay" class="modalOverlay">
+    <div class="modalBox" id="profileBox">
+      <button class="modalCloseBtn" id="profileCloseBtn">✕</button>
+      <h2>Profile</h2>
+      <div id="avatarUploadWrap">
+        <div id="avatarPreview" title="DP badlo"></div>
+        <input type="file" id="avatarInput" hidden accept="image/*" />
+        <button id="avatarUploadBtn">Change photo</button>
+      </div>
+      <input id="profileNameInput" placeholder="Name" autocomplete="name" />
+      <input id="profileEmailInput" type="email" placeholder="Email" autocomplete="email" />
+      <div class="modalSavedMsg" id="profileSavedMsg"></div>
+      <button class="primary" id="profileSaveBtn">Save</button>
+    </div>
+  </div>
+
+  <div id="comingSoonToast"></div>
+
   <div id="sidebar">
     <div id="brand"><div id="brandLogo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M5 7.5c3 1.5 11 1.5 14 0"/><path d="M5 16.5c3-1.5 11-1.5 14 0"/></svg></div><span class="nm">World AI</span><span id="brandBeta">beta</span></div>
     <button class="sideBtn" id="newChatBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New chat</button>
@@ -1025,11 +1097,14 @@ let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError,
     authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
     sidebarEl, chatListEl, projectChipsEl, searchInput, searchWrap, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle, sidebarCollapseBtn,
     chatTitleEl, exportBtn, topMenuBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
-    attachBtn, fileInput, searchModeBtn, codeModeBtn;
+    attachBtn, fileInput, searchModeBtn, codeModeBtn,
+    profileOverlay, profileCloseBtn, avatarPreview, avatarInput, avatarUploadBtn,
+    profileNameInput, profileEmailInput, profileSavedMsg, profileSaveBtn, comingSoonToast;
 
 let isSignup = false;
 let isLoggedIn = false;
 let chats = [];
+let currentUsername = '';
 
 /* Consistent stroke-icon set (matches the brand mark style) — used instead of emoji
    so icons render identically across every OS/browser, regardless of emoji font support. */
@@ -1056,6 +1131,9 @@ const ICONS = {
   trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 20 7"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M7 7l1 12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-12"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
   pencil: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><line x1="14" y1="7" x2="17" y2="10"/></svg>',
   downloadSmall: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><polyline points="7.5 10 12 14.5 16.5 10"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>',
+  gear: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V19.6a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.04-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.04H4.4a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.04 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1.04-1.56V4.4a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.04 1.56h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.56 1.04h.09a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.04z"/></svg>',
+  help: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.3 1.1-1.3 1.9v.3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  chevronDown: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
 };
 
 let projects = [];
@@ -1111,6 +1189,40 @@ function initApp() {
   fileInput = document.getElementById('fileInput');
   searchModeBtn = document.getElementById('searchModeBtn');
   codeModeBtn = document.getElementById('codeModeBtn');
+
+  profileOverlay = document.getElementById('profileOverlay');
+  profileCloseBtn = document.getElementById('profileCloseBtn');
+  avatarPreview = document.getElementById('avatarPreview');
+  avatarInput = document.getElementById('avatarInput');
+  avatarUploadBtn = document.getElementById('avatarUploadBtn');
+  profileNameInput = document.getElementById('profileNameInput');
+  profileEmailInput = document.getElementById('profileEmailInput');
+  profileSavedMsg = document.getElementById('profileSavedMsg');
+  profileSaveBtn = document.getElementById('profileSaveBtn');
+  comingSoonToast = document.getElementById('comingSoonToast');
+
+  userLabel.addEventListener('click', (e) => { if (isLoggedIn) { e.stopPropagation(); openAccountMenu(); } });
+  profileCloseBtn.addEventListener('click', closeProfileModal);
+  avatarPreview.addEventListener('click', () => avatarInput.click());
+  avatarUploadBtn.addEventListener('click', () => avatarInput.click());
+  avatarInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      localStorage.setItem('jarvis_avatar', reader.result);
+      renderAvatarPreview();
+      renderUserLabel();
+    };
+    reader.readAsDataURL(file);
+  });
+  profileSaveBtn.addEventListener('click', () => {
+    localStorage.setItem('jarvis_profile_name', profileNameInput.value.trim());
+    localStorage.setItem('jarvis_profile_email', profileEmailInput.value.trim());
+    renderUserLabel();
+    profileSavedMsg.textContent = '✅ Saved';
+    setTimeout(() => { profileSavedMsg.textContent = ''; }, 1800);
+  });
 
   searchModeBtn.addEventListener('click', () => setMode('search'));
   codeModeBtn.addEventListener('click', () => setMode('code'));
@@ -1402,7 +1514,8 @@ async function checkAuth() {
 
 async function enterLoggedInMode(username) {
   isLoggedIn = true;
-  userLabel.innerHTML = ICONS.user + '<span>' + username + '</span>';
+  currentUsername = username;
+  renderUserLabel();
   searchWrap.style.display = 'block';
   chatListEl.style.display = 'flex';
   guestNotice.style.display = 'none';
@@ -1434,6 +1547,105 @@ function enterGuestMode() {
   guestChatId = crypto.randomUUID();
   showHero();
 }
+
+/* ---- Account label (avatar + name + plan + chevron) ---- */
+function renderUserLabel() {
+  const avatar = localStorage.getItem('jarvis_avatar');
+  const displayName = localStorage.getItem('jarvis_profile_name') || currentUsername;
+  const avatarHtml = avatar ? `<img src="${avatar}" />` : ICONS.user;
+  userLabel.innerHTML =
+    `<span class="ulLeft"><span class="ulAvatar">${avatarHtml}</span><span class="ulName">${(displayName || '').replace(/</g, '&lt;')}</span><span class="ulPlan">· Free</span></span>` +
+    `<span class="ulChevron">${ICONS.chevronDown}</span>`;
+}
+
+/* ---- Account dropdown: Profile / Settings / Help ---- */
+function openAccountMenu() {
+  closeChatMenus();
+  const menu = document.createElement('div');
+  menu.className = 'chatMenuDropdown';
+
+  const items = [
+    { icon: ICONS.user, label: 'Profile', action: () => openProfileModal() },
+    { icon: ICONS.gear, label: 'Settings', action: (rect) => openSettingsSubmenu(rect) },
+    { icon: ICONS.help, label: 'Help', action: (rect) => openHelpSubmenu(rect) },
+  ];
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'chatMenuItem';
+    row.innerHTML = `<span class="ico">${item.icon}</span><span>${item.label}</span>`;
+    row.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const rect = row.getBoundingClientRect();
+      closeChatMenus();
+      item.action(rect);
+    });
+    menu.appendChild(row);
+  });
+
+  document.body.appendChild(menu);
+  positionMenuFromButton(menu, userLabel);
+}
+
+function openSettingsSubmenu(rect) {
+  closeChatMenus();
+  const menu = document.createElement('div');
+  menu.className = 'chatMenuDropdown';
+  const row = document.createElement('div');
+  row.className = 'chatMenuItem danger';
+  row.innerHTML = `<span class="ico">${ICONS.logout}</span><span>Logout</span>`;
+  row.addEventListener('click', (e) => { e.stopPropagation(); closeChatMenus(); doLogout(); });
+  menu.appendChild(row);
+  document.body.appendChild(menu);
+  const menuW = menu.offsetWidth, menuH = menu.offsetHeight;
+  let left = rect.left, top = rect.bottom + 4;
+  if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
+  if (top + menuH > window.innerHeight - 8) top = rect.top - menuH - 4;
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
+function openHelpSubmenu(rect) {
+  closeChatMenus();
+  const menu = document.createElement('div');
+  menu.className = 'chatMenuDropdown';
+  const row = document.createElement('div');
+  row.className = 'chatMenuItem';
+  row.innerHTML = `<span class="ico">${ICONS.terminal}</span><span>Developer Tools</span>`;
+  row.addEventListener('click', (e) => { e.stopPropagation(); closeChatMenus(); showComingSoon('Developer Tools'); });
+  menu.appendChild(row);
+  document.body.appendChild(menu);
+  const menuW = menu.offsetWidth, menuH = menu.offsetHeight;
+  let left = rect.left, top = rect.bottom + 4;
+  if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
+  if (top + menuH > window.innerHeight - 8) top = rect.top - menuH - 4;
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
+/* ---- "Coming soon" toast ---- */
+let comingSoonTimer = null;
+function showComingSoon(featureName) {
+  if (!comingSoonToast) return;
+  comingSoonToast.textContent = `🚧 ${featureName} — Coming soon!`;
+  comingSoonToast.classList.add('show');
+  clearTimeout(comingSoonTimer);
+  comingSoonTimer = setTimeout(() => comingSoonToast.classList.remove('show'), 2500);
+}
+
+/* ---- Profile modal: basic details + dp (avatar) ---- */
+function renderAvatarPreview() {
+  const avatar = localStorage.getItem('jarvis_avatar');
+  avatarPreview.innerHTML = avatar ? `<img src="${avatar}" />` : ICONS.user;
+}
+
+function openProfileModal() {
+  profileNameInput.value = localStorage.getItem('jarvis_profile_name') || currentUsername || '';
+  profileEmailInput.value = localStorage.getItem('jarvis_profile_email') || '';
+  profileSavedMsg.textContent = '';
+  renderAvatarPreview();
+  profileOverlay.classList.add('open');
+}
+function closeProfileModal() { profileOverlay.classList.remove('open'); }
 
 function applyTheme(mode) {
   if (mode === 'dark') { document.body.classList.add('dark'); themeBtn.innerHTML = ICONS.sun; themeBtn.title = 'Light mode'; }
