@@ -130,6 +130,44 @@ If the Web Search tool is available, use it for current/real-time info (news, we
 If the Code Execution tool is available, actually run the code to verify the result — don't just
 write it without running it."""
 
+# ---------------- Reply-language override (Settings > Language) ----------------
+# "auto" (default) = purana behavior, jo bhi language user likhe usi mein reply.
+# Koi aur code diya ho to us fixed language mein hi reply karo, chahe user kisi
+# aur language mein type kare.
+LANGUAGE_INSTRUCTIONS = {
+    "auto": "",
+    "en": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to English (United States) in "
+          "Settings. Always reply in English, regardless of what language the user writes in.",
+    "fr": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to French (France) in Settings. "
+          "Always reply in French, regardless of what language the user writes in.",
+    "de": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to German (Germany) in Settings. "
+          "Always reply in German, regardless of what language the user writes in.",
+    "hi": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to Hindi (India) in Settings. "
+          "Always reply in Hindi (Devanagari script), regardless of what language the user writes in.",
+    "id": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to Indonesian (Indonesia) in "
+          "Settings. Always reply in Indonesian, regardless of what language the user writes in.",
+    "it": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to Italian (Italy) in Settings. "
+          "Always reply in Italian, regardless of what language the user writes in.",
+    "ja": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to Japanese (Japan) in Settings. "
+          "Always reply in Japanese, regardless of what language the user writes in.",
+    "ko": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to Korean (South Korea) in "
+          "Settings. Always reply in Korean, regardless of what language the user writes in.",
+    "pt": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to Portuguese (Brazil) in "
+          "Settings. Always reply in Portuguese, regardless of what language the user writes in.",
+    "es-lat": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to Spanish (Latin America) "
+              "in Settings. Always reply in Latin American Spanish, regardless of what language the user "
+              "writes in.",
+    "es-es": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to Spanish (Spain) in "
+             "Settings. Always reply in Spain Spanish, regardless of what language the user writes in.",
+    "hinglish": "\n\nIMPORTANT OVERRIDE: The user has set their reply language to Hinglish in Settings. "
+                "Always reply in Hinglish (mixed Hindi-English, Roman script), regardless of what "
+                "language the user writes in.",
+}
+
+
+def build_system_prompt(language: str) -> str:
+    return SYSTEM_PROMPT + LANGUAGE_INSTRUCTIONS.get((language or "auto").strip(), "")
+
 guest_sessions = {}
 
 # ---------------- Database (MongoDB) ----------------
@@ -586,9 +624,11 @@ async def chat(
     message: str = Form(""),
     chat_id: str = Form(...),
     mode: str = Form("none"),
+    language: str = Form("auto"),
     files: List[UploadFile] = File(default=[]),
 ):
     user = get_current_user(request)
+    system_prompt = build_system_prompt(language)
 
     if not providers:
         def err_stream():
@@ -692,7 +732,7 @@ async def chat(
                 return
 
             config_kwargs = dict(
-                system_instruction=SYSTEM_PROMPT,
+                system_instruction=system_prompt,
                 max_output_tokens=1500 if mode == "code" else 800,
                 temperature=0.7,
             )
@@ -717,7 +757,7 @@ async def chat(
                                 yield f"data: {json.dumps({'chunk': piece})}\n\n"
                     else:  # openai
                         for piece in stream_openai_text(
-                            provider["client"], contents, SYSTEM_PROMPT, config_kwargs["max_output_tokens"]
+                            provider["client"], contents, system_prompt, config_kwargs["max_output_tokens"]
                         ):
                             full_text += piece
                             yielded_any = True
