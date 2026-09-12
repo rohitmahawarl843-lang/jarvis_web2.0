@@ -996,7 +996,7 @@ for item in items:
     <div id="hero">
       <div class="heroTopSpacer"></div>
       <div id="heroTag"><span class="dot"></span>World AI 2.0 — now with web search and code execution</div>
-      <h1>Ask me <span class="grad cursorBlink" id="typedPhrase">anything.</span></h1>
+      <h1 id="heroGreeting">Good <span id="heroGreetWord">afternoon</span><span class="grad" id="heroGreetName"></span></h1>
       <p id="heroSub" style="display:none;">Guest mode — is chat ka data save nahi hoga.</p>
       <div id="heroChipsApp">
         <button class="heroChip" data-fill="Write a Python web scraper">Write a web scraper</button>
@@ -1132,7 +1132,7 @@ let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError,
     authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
     sidebarEl, chatListEl, projectChipsEl, searchInput, searchWrap, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle, sidebarCollapseBtn,
     chatTitleEl, exportBtn, topMenuBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
-    mainEl, inputWrapEl, heroChipsAppEl,
+    mainEl, inputWrapEl, heroChipsAppEl, heroGreetWordEl, heroGreetNameEl,
     attachBtn, fileInput, searchModeBtn, codeModeBtn,
     profileOverlay, profileCloseBtn, avatarPreview, avatarInput, avatarUploadBtn,
     profileNameInput, profileEmailInput, profileSavedMsg, profileSaveBtn, comingSoonToast,
@@ -1273,6 +1273,8 @@ function initApp() {
   mainEl = document.getElementById('main');
   inputWrapEl = document.getElementById('inputWrap');
   heroChipsAppEl = document.getElementById('heroChipsApp');
+  heroGreetWordEl = document.getElementById('heroGreetWord');
+  heroGreetNameEl = document.getElementById('heroGreetName');
 
   profileOverlay = document.getElementById('profileOverlay');
   profileCloseBtn = document.getElementById('profileCloseBtn');
@@ -1310,6 +1312,7 @@ function initApp() {
     localStorage.setItem('jarvis_profile_name', profileNameInput.value.trim());
     localStorage.setItem('jarvis_profile_email', profileEmailInput.value.trim());
     renderUserLabel();
+    updateHeroGreeting();
     profileSavedMsg.textContent = '✅ Saved';
     setTimeout(() => { profileSavedMsg.textContent = ''; }, 1800);
   });
@@ -1415,24 +1418,9 @@ function initApp() {
     micBtn.title = 'This browser does not support voice input (try Chrome)';
   }
 
-  // typed phrase animation (app hero)
-  const typedPhraseEl = document.getElementById('typedPhrase');
-  const heroPhrases = ['anything.', 'code.', 'research.', 'ideas.', 'your work.'];
-  let phraseIdx = 0;
-  function typePhrase() {
-    const phrase = heroPhrases[phraseIdx];
-    let i = 0;
-    typedPhraseEl.textContent = '';
-    const typeInterval = setInterval(() => {
-      i++;
-      typedPhraseEl.textContent = phrase.slice(0, i);
-      if (i >= phrase.length) {
-        clearInterval(typeInterval);
-        setTimeout(() => { phraseIdx = (phraseIdx + 1) % heroPhrases.length; typePhrase(); }, 1800);
-      }
-    }, 60);
-  }
-  typePhrase();
+  // greeting (app hero) refreshed elsewhere via updateHeroGreeting()
+  updateHeroGreeting();
+  setInterval(updateHeroGreeting, 5 * 60 * 1000);
 
   document.querySelectorAll('#heroChipsApp .heroChip').forEach(chip => {
     chip.addEventListener('click', () => { inputEl.value = chip.dataset.fill; inputEl.focus(); });
@@ -1618,6 +1606,7 @@ async function enterLoggedInMode(username) {
   await loadChats();
   await loadProjects();
   await loadSkills();
+  updateHeroGreeting();
   showHero();
 }
 
@@ -1635,6 +1624,7 @@ function enterGuestMode() {
   authActionBtn.classList.remove('on');
   authActionBtn.onclick = openAuth;
   guestChatId = crypto.randomUUID();
+  updateHeroGreeting();
   showHero();
 }
 
@@ -2126,6 +2116,21 @@ function renderSidebar(filter = '') {
     row.appendChild(title); row.appendChild(menuBtn);
     chatListEl.appendChild(row);
   });
+}
+
+function greetingWord() {
+  const h = new Date().getHours();
+  if (h < 12) return 'morning';
+  if (h < 17) return 'afternoon';
+  return 'evening';
+}
+function updateHeroGreeting() {
+  if (!heroGreetWordEl || !heroGreetNameEl) return;
+  heroGreetWordEl.textContent = greetingWord();
+  const name = (localStorage.getItem('jarvis_profile_name') || currentUsername || '').trim();
+  heroGreetNameEl.textContent = name ? ', ' + name : '';
+  heroGreetNameEl.classList.toggle('cursorBlink', !!name);
+  heroGreetWordEl.classList.toggle('cursorBlink', !name);
 }
 
 function showHero() {
