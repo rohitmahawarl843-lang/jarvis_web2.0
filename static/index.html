@@ -283,6 +283,19 @@
   #authToggle { text-align: center; font-size: 13px; color: var(--muted); }
   #authToggle a { cursor: pointer; text-decoration: none; font-weight: 600; }
 
+  #authMethodRow { display: none; gap: 8px; }
+  .authMethodBtn {
+    flex: 1; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--muted); font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: var(--font-sans); transition: all 0.15s;
+  }
+  .authMethodBtn.active { border-color: var(--accent); color: var(--accent); background: rgba(124,110,230,0.1); }
+  #authOtpRow { display: none; flex-direction: column; gap: 10px; }
+  #authOtpHint { font-size: 12.5px; color: var(--muted); text-align: center; line-height: 1.4; }
+  #authOtpInput { text-align: center; letter-spacing: 6px; font-size: 18px !important; font-weight: 600; }
+  #authOtpLinks { display: flex; justify-content: center; gap: 14px; font-size: 12.5px; }
+  #authOtpLinks a { color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; }
+
   #sidebar {
     width: 264px; flex-shrink: 0; background: var(--sidebar-bg); position: relative; z-index: 1;
     border-right: 1px solid var(--border); display: flex; flex-direction: column;
@@ -923,6 +936,16 @@ for item in items:
       <h2 id="authTitle">Log in</h2>
       <input id="authUsername" placeholder="Username" autocomplete="username" />
       <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" />
+      <div id="authMethodRow">
+        <button type="button" class="authMethodBtn active" id="authMethodEmail">📧 Email</button>
+        <button type="button" class="authMethodBtn" id="authMethodMobile">📱 Mobile</button>
+      </div>
+      <input id="authContact" placeholder="you@gmail.com" style="display:none;" autocomplete="email" />
+      <div id="authOtpRow">
+        <div id="authOtpHint"></div>
+        <input id="authOtpInput" placeholder="6-digit OTP" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
+        <div id="authOtpLinks"><a id="authResendLink">Resend OTP</a><span>·</span><a id="authBackLink">Change details</a></div>
+      </div>
       <div id="authError"></div>
       <button class="primary" id="authSubmitBtn">Log in</button>
       <div id="authToggle">Don't have an account? <a id="authToggleLink">Sign up</a></div>
@@ -1136,6 +1159,8 @@ document.querySelectorAll('#demoTabBar .tabBtn').forEach(btn => {
 // ======================================================================
 let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError, authSubmitBtn,
     authToggle, authToggleLink, authActionBtn, guestLoginBtn, guestNotice, guestBadge, heroSub,
+    authMethodRow, authMethodEmail, authMethodMobile, authContact,
+    authOtpRow, authOtpHint, authOtpInput, authResendLink, authBackLink,
     sidebarEl, chatListEl, projectChipsEl, searchInput, searchWrap, newChatBtn, themeBtn, ttsBtn, userLabel, menuToggle, sidebarCollapseBtn,
     chatTitleEl, exportBtn, topMenuBtn, heroEl, chatEl, fileChipsEl, inputEl, sendBtn, micBtn, statusEl,
     mainEl, inputWrapEl, heroChipsAppEl, heroGreetWordEl, heroGreetNameEl,
@@ -1143,6 +1168,10 @@ let authOverlay, authCloseBtn, authTitle, authUsername, authPassword, authError,
     profileOverlay, profileCloseBtn, avatarPreview, avatarInput, avatarUploadBtn,
     profileNameInput, profileEmailInput, profileSavedMsg, profileSaveBtn, comingSoonToast,
     langOverlay, langCloseBtn, langGrid;
+
+let otpSignupId = null;
+let authMethod = 'email';
+let lastSignupPayload = null;
 
 let isSignup = false;
 let isLoggedIn = false;
@@ -1245,6 +1274,15 @@ function initApp() {
   authSubmitBtn = document.getElementById('authSubmitBtn');
   authToggle = document.getElementById('authToggle');
   authToggleLink = document.getElementById('authToggleLink');
+  authMethodRow = document.getElementById('authMethodRow');
+  authMethodEmail = document.getElementById('authMethodEmail');
+  authMethodMobile = document.getElementById('authMethodMobile');
+  authContact = document.getElementById('authContact');
+  authOtpRow = document.getElementById('authOtpRow');
+  authOtpHint = document.getElementById('authOtpHint');
+  authOtpInput = document.getElementById('authOtpInput');
+  authResendLink = document.getElementById('authResendLink');
+  authBackLink = document.getElementById('authBackLink');
   authActionBtn = document.getElementById('authActionBtn');
   guestLoginBtn = document.getElementById('guestLoginBtn');
   guestNotice = document.getElementById('guestNotice');
@@ -1333,8 +1371,11 @@ function initApp() {
 
   authToggleLink.addEventListener('click', () => {
     isSignup = !isSignup;
+    resetAuthToFormStep();
     authTitle.textContent = isSignup ? 'Sign up' : 'Log in';
-    authSubmitBtn.textContent = isSignup ? 'Sign up' : 'Log in';
+    authSubmitBtn.textContent = isSignup ? 'Send OTP' : 'Log in';
+    authMethodRow.style.display = isSignup ? 'flex' : 'none';
+    authContact.style.display = isSignup ? 'block' : 'none';
     authToggle.innerHTML = isSignup
       ? 'Already have an account? <a id="authToggleLink2">Log in</a>'
       : "Don't have an account? <a id=\"authToggleLink\">Sign up</a>";
@@ -1343,18 +1384,85 @@ function initApp() {
     authError.textContent = '';
   });
 
-  authSubmitBtn.addEventListener('click', async () => {
-    const username = authUsername.value.trim();
-    const password = authPassword.value;
-    if (!username || !password) { authError.textContent = 'Please fill in both username and password.'; return; }
+  setAuthMethod('email');
+  authMethodEmail.addEventListener('click', () => setAuthMethod('email'));
+  authMethodMobile.addEventListener('click', () => setAuthMethod('mobile'));
+
+  authBackLink.addEventListener('click', (e) => { e.preventDefault(); resetAuthToFormStep(); authError.textContent = ''; });
+
+  authResendLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!lastSignupPayload) return;
+    authError.textContent = '';
     const fd = new FormData();
-    fd.append('username', username);
-    fd.append('password', password);
-    const res = await fetch(isSignup ? '/api/signup' : '/api/login', { method: 'POST', body: fd });
+    fd.append('username', lastSignupPayload.username);
+    fd.append('password', lastSignupPayload.password);
+    fd.append('method', lastSignupPayload.method);
+    fd.append('contact', lastSignupPayload.contact);
+    const res = await fetch('/api/signup/request-otp', { method: 'POST', body: fd });
     const data = await res.json();
     if (!res.ok) { authError.textContent = data.error || 'Something went wrong.'; return; }
-    closeAuth();
-    await enterLoggedInMode(data.username);
+    otpSignupId = data.signup_id;
+    authError.textContent = '✅ OTP dubara bhej diya gaya.';
+  });
+
+  authSubmitBtn.addEventListener('click', async () => {
+    authError.textContent = '';
+
+    if (!isSignup) {
+      const username = authUsername.value.trim();
+      const password = authPassword.value;
+      if (!username || !password) { authError.textContent = 'Please fill in both username and password.'; return; }
+      const fd = new FormData();
+      fd.append('username', username);
+      fd.append('password', password);
+      const res = await fetch('/api/login', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) { authError.textContent = data.error || 'Something went wrong.'; return; }
+      closeAuth();
+      await enterLoggedInMode(data.username);
+      return;
+    }
+
+    // ---- Signup: step 1 = request OTP, step 2 = verify OTP ----
+    if (!otpSignupId) {
+      const username = authUsername.value.trim();
+      const password = authPassword.value;
+      const contact = authContact.value.trim();
+      if (!username || !password) { authError.textContent = 'Please fill in both username and password.'; return; }
+      if (!contact) { authError.textContent = authMethod === 'email' ? 'Apna email daalo.' : 'Apna mobile number daalo.'; return; }
+      const fd = new FormData();
+      fd.append('username', username);
+      fd.append('password', password);
+      fd.append('method', authMethod);
+      fd.append('contact', contact);
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.textContent = 'Sending OTP...';
+      let res, data;
+      try {
+        res = await fetch('/api/signup/request-otp', { method: 'POST', body: fd });
+        data = await res.json();
+      } finally {
+        authSubmitBtn.disabled = false;
+      }
+      if (!res.ok) { authSubmitBtn.textContent = 'Send OTP'; authError.textContent = data.error || 'Something went wrong.'; return; }
+      otpSignupId = data.signup_id;
+      lastSignupPayload = { username, password, contact, method: authMethod };
+      enterOtpStep(contact, authMethod);
+    } else {
+      const otp = authOtpInput.value.trim();
+      if (!otp) { authError.textContent = 'OTP daalo.'; return; }
+      const fd = new FormData();
+      fd.append('signup_id', otpSignupId);
+      fd.append('otp', otp);
+      const res = await fetch('/api/signup/verify-otp', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) { authError.textContent = data.error || 'Something went wrong.'; return; }
+      otpSignupId = null;
+      lastSignupPayload = null;
+      closeAuth();
+      await enterLoggedInMode(data.username);
+    }
   });
 
   themeBtn.addEventListener('click', () => applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark'));
@@ -1582,7 +1690,46 @@ function createSkillPrompt() {
   fetch('/api/skills', { method: 'POST', body: fd }).then(r => r.json()).then(s => { skills.push(s); });
 }
 
-function openAuth() { authOverlay.classList.add('open'); authError.textContent = ''; }
+function openAuth() {
+  authOverlay.classList.add('open');
+  authError.textContent = '';
+  resetAuthToFormStep();
+}
+
+function setAuthMethod(m) {
+  authMethod = m;
+  authMethodEmail.classList.toggle('active', m === 'email');
+  authMethodMobile.classList.toggle('active', m === 'mobile');
+  authContact.placeholder = m === 'email' ? 'you@gmail.com' : 'Mobile number (10-digit)';
+  authContact.type = m === 'email' ? 'email' : 'tel';
+  authContact.autocomplete = m === 'email' ? 'email' : 'tel';
+}
+
+function enterOtpStep(contact, method) {
+  authUsername.style.display = 'none';
+  authPassword.style.display = 'none';
+  authMethodRow.style.display = 'none';
+  authContact.style.display = 'none';
+  authOtpRow.style.display = 'flex';
+  authOtpHint.textContent = 'OTP bheja gaya hai ' + contact + ' par' +
+    (method === 'email' ? ' — email check karo (spam folder bhi).' : ' — SMS check karo.');
+  authOtpInput.value = '';
+  authSubmitBtn.textContent = 'Verify & Create Account';
+  setTimeout(() => authOtpInput.focus(), 50);
+}
+
+function resetAuthToFormStep() {
+  otpSignupId = null;
+  lastSignupPayload = null;
+  authUsername.style.display = 'block';
+  authPassword.style.display = 'block';
+  authMethodRow.style.display = isSignup ? 'flex' : 'none';
+  authContact.style.display = isSignup ? 'block' : 'none';
+  authOtpRow.style.display = 'none';
+  authSubmitBtn.textContent = isSignup ? 'Send OTP' : 'Log in';
+  authContact.value = '';
+  authOtpInput.value = '';
+}
 function closeAuth() { authOverlay.classList.remove('open'); }
 
 async function doLogout() {
