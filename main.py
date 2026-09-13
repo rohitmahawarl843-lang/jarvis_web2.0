@@ -16,6 +16,7 @@ import socket
 import smtplib
 import urllib.request
 import urllib.parse
+import urllib.error
 import mimetypes
 import itertools
 import threading
@@ -269,10 +270,28 @@ def send_otp_sms(to_mobile: str, otp: str):
         "numbers": digits,
     })
     url = f"https://www.fast2sms.com/dev/bulkV2?{params}"
-    with urllib.request.urlopen(url, timeout=10) as resp:
-        result = json.loads(resp.read().decode())
+    try:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            body = resp.read().decode()
+    except urllib.error.HTTPError as e:
+        # Fast2SMS non-2xx responses ka body me hi exact reason hota hai
+        # (galat API key, wallet balance, KYC pending, waghera) — HTTPError
+        # khud sirf "HTTP Error 400: Bad Request" dikhata, isliye body padhte hain.
+        body = e.read().decode(errors="ignore")
+        try:
+            err_msg = json.loads(body).get("message")
+        except Exception:
+            err_msg = None
+        if isinstance(err_msg, list):
+            err_msg = ", ".join(str(m) for m in err_msg)
+        raise RuntimeError(err_msg or body or f"Fast2SMS ne request reject ki (HTTP {e.code}).")
+
+    result = json.loads(body)
     if not result.get("return"):
-        raise RuntimeError(result.get("message") or "SMS bhejne mein error aayi.")
+        msg = result.get("message")
+        if isinstance(msg, list):
+            msg = ", ".join(str(m) for m in msg)
+        raise RuntimeError(msg or "SMS bhejne mein error aayi.")
 
 
 def get_current_user(request: Request):
